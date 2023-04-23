@@ -2,6 +2,26 @@ namespace MofImplementationLib.Model
 {
     metamodel Mof(Uri="http://www.omg.org/spec/MOF"); 
 
+        /// <summary>
+    /// Boolean is used for logical expressions, consisting of the predefined values true and false.
+    /// </summary>
+    const PrimitiveType Boolean;
+    /// <summary>
+    /// Integer is a primitive type representing integer values.
+    /// </summary>
+    const PrimitiveType Integer;
+    /// <summary>
+    /// Real is a primitive type representing the mathematical concept of real.
+    /// </summary>
+    const PrimitiveType Real;
+    /// <summary>
+    /// String is a sequence of characters in some suitable character set used to display information about the model. Character sets may include non-Roman alphabets and characters.
+    /// </summary>
+    const PrimitiveType String;
+    /// <summary>
+    /// UnlimitedNatural is a primitive type representing unlimited natural values.
+    /// </summary>
+    const PrimitiveType UnlimitedNatural;
 
     /// <summary>
     /// VisibilityKind is an enumeration type that defines literals to determine the visibility of Elements in a model.
@@ -826,63 +846,6 @@ namespace MofImplementationLib.Model
     }
 
     /// <summary>
-    /// A Constraint is a condition or restriction expressed in natural language text or in a machine readable language for the purpose of declaring some of the semantics of an Element or set of Elements.
-    /// </summary>
-    class Constraint : PackageableElement
-    {
-    	/// <summary>
-    	/// The ordered set of Elements referenced by this Constraint.
-    	/// </summary>
-    	list<Element> ConstrainedElement;
-    	/// <summary>
-    	/// Specifies the Namespace that owns the Constraint.
-    	/// </summary>
-    	Namespace Context subsets NamedElement.Namespace;
-    	/// <summary>
-    	/// A condition that must be true when evaluated in order for the Constraint to be satisfied.
-    	/// </summary>
-    	containment ValueSpecification Specification subsets Element.OwnedElement;
-    }
-
-    /// <summary>
-    /// A PackageableElement is a NamedElement that may be owned directly by a Package. A PackageableElement is also able to serve as the parameteredElement of a TemplateParameter.
-    /// </summary>
-    abstract class PackageableElement : ParameterableElement, NamedElement
-    {
-    	/// <summary>
-    	/// A PackageableElement must have a visibility specified if it is owned by a Namespace. The default visibility is public.
-    	/// </summary>
-    	VisibilityKind Visibility redefines NamedElement.Visibility;
-    }
-
-    /// <summary>
-    /// A ParameterableElement is an Element that can be exposed as a formal TemplateParameter for a template, or specified as an actual parameter in a binding of a template.
-    /// </summary>
-    abstract class ParameterableElement : Element
-    {
-    	/// <summary>
-    	/// The formal TemplateParameter that owns this ParameterableElement.
-    	/// </summary>
-    	TemplateParameter OwningTemplateParameter subsets Element.Owner, ParameterableElement.TemplateParameter;
-    	/// <summary>
-    	/// The TemplateParameter that exposes this ParameterableElement as a formal parameter.
-    	/// </summary>
-    	TemplateParameter TemplateParameter;
-    	/// <summary>
-    	/// The query isCompatibleWith() determines if this ParameterableElement is compatible with the specified ParameterableElement. By default, this ParameterableElement is compatible with another ParameterableElement p if the kind of this ParameterableElement is the same as or a subtype of the kind of p. Subclasses of ParameterableElement should override this operation to specify different compatibility constraints.
-    	/// </summary>
-    	// spec:
-    	//     result = (self.oclIsKindOf(p.oclType()))
-    	readonly bool IsCompatibleWith(ParameterableElement p);
-    	/// <summary>
-    	/// The query isTemplateParameter() determines if this ParameterableElement is exposed as a formal TemplateParameter.
-    	/// </summary>
-    	// spec:
-    	//     result = (templateParameter->notEmpty())
-    	readonly bool IsTemplateParameter();
-    }
-
-    /// <summary>
     /// A DataType is a type whose instances are identified only by their value.
     /// </summary>
     class DataType : Classifier
@@ -895,54 +858,6 @@ namespace MofImplementationLib.Model
     	/// The Operations owned by the DataType.
     	/// </summary>
     	containment list<Operation> OwnedOperation subsets Classifier.Feature, Namespace.OwnedMember;
-    }
-
-    /// <summary>
-    /// An ElementImport identifies a NamedElement in a Namespace other than the one that owns that NamedElement and allows the NamedElement to be referenced using an unqualified name in the Namespace owning the ElementImport.
-    /// </summary>
-    class ElementImport : DirectedRelationship
-    {
-    	/// <summary>
-    	/// Specifies the name that should be added to the importing Namespace in lieu of the name of the imported PackagableElement. The alias must not clash with any other member in the importing Namespace. By default, no alias is used.
-    	/// </summary>
-    	string Alias;
-    	/// <summary>
-    	/// Specifies the PackageableElement whose name is to be added to a Namespace.
-    	/// </summary>
-    	PackageableElement ImportedElement subsets DirectedRelationship.Target;
-    	/// <summary>
-    	/// Specifies the Namespace that imports a PackageableElement from another Namespace.
-    	/// </summary>
-    	Namespace ImportingNamespace subsets DirectedRelationship.Source, Element.Owner;
-    	/// <summary>
-    	/// Specifies the visibility of the imported PackageableElement within the importingNamespace, i.e., whether the  importedElement will in turn be visible to other Namespaces. If the ElementImport is public, the importedElement will be visible outside the importingNamespace while, if the ElementImport is private, it will not.
-    	/// </summary>
-    	VisibilityKind Visibility;
-    	/// <summary>
-    	/// The query getName() returns the name under which the imported PackageableElement will be known in the importing namespace.
-    	/// </summary>
-    	// spec:
-    	//     result = (if alias->notEmpty() then
-    	//       alias
-    	//     else
-    	//       importedElement.name
-    	//     endif)
-    	readonly string GetName();
-    }
-
-    /// <summary>
-    /// A DirectedRelationship represents a relationship between a collection of source model Elements and a collection of target model Elements.
-    /// </summary>
-    abstract class DirectedRelationship : Relationship
-    {
-    	/// <summary>
-    	/// Specifies the source Element(s) of the DirectedRelationship.
-    	/// </summary>
-    	union set<Element> Source subsets Relationship.RelatedElement;
-    	/// <summary>
-    	/// Specifies the target Element(s) of the DirectedRelationship.
-    	/// </summary>
-    	union set<Element> Target subsets Relationship.RelatedElement;
     }
 
     /// <summary>
@@ -1010,6 +925,44 @@ namespace MofImplementationLib.Model
     }
 
     /// <summary>
+    /// A PackageableElement is a NamedElement that may be owned directly by a Package. A PackageableElement is also able to serve as the parameteredElement of a TemplateParameter.
+    /// </summary>
+    abstract class PackageableElement : ParameterableElement, NamedElement
+    {
+    	/// <summary>
+    	/// A PackageableElement must have a visibility specified if it is owned by a Namespace. The default visibility is public.
+    	/// </summary>
+    	VisibilityKind Visibility redefines NamedElement.Visibility;
+    }
+
+    /// <summary>
+    /// A ParameterableElement is an Element that can be exposed as a formal TemplateParameter for a template, or specified as an actual parameter in a binding of a template.
+    /// </summary>
+    abstract class ParameterableElement : Element
+    {
+    	/// <summary>
+    	/// The formal TemplateParameter that owns this ParameterableElement.
+    	/// </summary>
+    	TemplateParameter OwningTemplateParameter subsets Element.Owner, ParameterableElement.TemplateParameter;
+    	/// <summary>
+    	/// The TemplateParameter that exposes this ParameterableElement as a formal parameter.
+    	/// </summary>
+    	TemplateParameter TemplateParameter;
+    	/// <summary>
+    	/// The query isCompatibleWith() determines if this ParameterableElement is compatible with the specified ParameterableElement. By default, this ParameterableElement is compatible with another ParameterableElement p if the kind of this ParameterableElement is the same as or a subtype of the kind of p. Subclasses of ParameterableElement should override this operation to specify different compatibility constraints.
+    	/// </summary>
+    	// spec:
+    	//     result = (self.oclIsKindOf(p.oclType()))
+    	readonly bool IsCompatibleWith(ParameterableElement p);
+    	/// <summary>
+    	/// The query isTemplateParameter() determines if this ParameterableElement is exposed as a formal TemplateParameter.
+    	/// </summary>
+    	// spec:
+    	//     result = (templateParameter->notEmpty())
+    	readonly bool IsTemplateParameter();
+    }
+
+    /// <summary>
     /// A deployed artifact is an artifact or artifact instance that has been deployed to a deployment target.
     /// </summary>
     abstract class DeployedArtifact : NamedElement
@@ -1037,6 +990,21 @@ namespace MofImplementationLib.Model
     	/// The specializing Classifier in the Generalization relationship.
     	/// </summary>
     	Classifier Specific subsets DirectedRelationship.Source, Element.Owner;
+    }
+
+    /// <summary>
+    /// A DirectedRelationship represents a relationship between a collection of source model Elements and a collection of target model Elements.
+    /// </summary>
+    abstract class DirectedRelationship : Relationship
+    {
+    	/// <summary>
+    	/// Specifies the source Element(s) of the DirectedRelationship.
+    	/// </summary>
+    	union set<Element> Source subsets Relationship.RelatedElement;
+    	/// <summary>
+    	/// Specifies the target Element(s) of the DirectedRelationship.
+    	/// </summary>
+    	union set<Element> Target subsets Relationship.RelatedElement;
     }
 
     /// <summary>
@@ -1256,65 +1224,6 @@ namespace MofImplementationLib.Model
     	// spec:
     	//     result = (value)
     	readonly long UnlimitedValue();
-    }
-
-    /// <summary>
-    /// An OpaqueExpression is a ValueSpecification that specifies the computation of a collection of values either in terms of a UML Behavior or based on a textual statement in a language other than UML
-    /// </summary>
-    class OpaqueExpression : ValueSpecification
-    {
-    	/// <summary>
-    	/// Specifies the behavior of the OpaqueExpression as a UML Behavior.
-    	/// </summary>
-    	Behavior Behavior;
-    	/// <summary>
-    	/// A textual definition of the behavior of the OpaqueExpression, possibly in multiple languages.
-    	/// </summary>
-    	multi_list<string> Body;
-    	/// <summary>
-    	/// Specifies the languages used to express the textual bodies of the OpaqueExpression.  Languages are matched to body Strings by order. The interpretation of the body depends on the languages. If the languages are unspecified, they may be implicit from the expression body or the context.
-    	/// </summary>
-    	list<string> Language;
-    	/// <summary>
-    	/// If an OpaqueExpression is specified using a UML Behavior, then this refers to the single required return Parameter of that Behavior. When the Behavior completes execution, the values on this Parameter give the result of evaluating the OpaqueExpression.
-    	/// </summary>
-    	// spec:
-    	//     result = (if behavior = null then
-    	//     	null
-    	//     else
-    	//     	behavior.ownedParameter->first()
-    	//     endif)
-    	derived Parameter Result;
-    	/// <summary>
-    	/// The query isIntegral() tells whether an expression is intended to produce an Integer.
-    	/// </summary>
-    	// spec:
-    	//     result = (false)
-    	readonly bool IsIntegral();
-    	/// <summary>
-    	/// The query isNonNegative() tells whether an integer expression has a non-negative value.
-    	/// </summary>
-    	// pre:
-    	//     self.isIntegral()
-    	// spec:
-    	//     result = (false)
-    	readonly bool IsNonNegative();
-    	/// <summary>
-    	/// The query isPositive() tells whether an integer expression has a positive value.
-    	/// </summary>
-    	// spec:
-    	//     result = (false)
-    	// pre:
-    	//     self.isIntegral()
-    	readonly bool IsPositive();
-    	/// <summary>
-    	/// The query value() gives an integer value for an expression intended to produce one.
-    	/// </summary>
-    	// pre:
-    	//     self.isIntegral()
-    	// spec:
-    	//     result = (0)
-    	readonly int Value();
     }
 
     /// <summary>
@@ -1589,40 +1498,6 @@ namespace MofImplementationLib.Model
     	// spec:
     	//     result = (member->select( m | m.oclIsKindOf(PackageableElement) and self.makesVisible(m))->collect(oclAsType(PackageableElement))->asSet())
     	readonly set<PackageableElement> VisibleMembers();
-    }
-
-    /// <summary>
-    /// A PackageImport is a Relationship that imports all the non-private members of a Package into the Namespace owning the PackageImport, so that those Elements may be referred to by their unqualified names in the importingNamespace.
-    /// </summary>
-    class PackageImport : DirectedRelationship
-    {
-    	/// <summary>
-    	/// Specifies the Package whose members are imported into a Namespace.
-    	/// </summary>
-    	Package ImportedPackage subsets DirectedRelationship.Target;
-    	/// <summary>
-    	/// Specifies the Namespace that imports the members from a Package.
-    	/// </summary>
-    	Namespace ImportingNamespace subsets DirectedRelationship.Source, Element.Owner;
-    	/// <summary>
-    	/// Specifies the visibility of the imported PackageableElements within the importingNamespace, i.e., whether imported Elements will in turn be visible to other Namespaces. If the PackageImport is public, the imported Elements will be visible outside the importingNamespace, while, if the PackageImport is private, they will not.
-    	/// </summary>
-    	VisibilityKind Visibility;
-    }
-
-    /// <summary>
-    /// A package merge defines how the contents of one package are extended by the contents of another package.
-    /// </summary>
-    class PackageMerge : DirectedRelationship
-    {
-    	/// <summary>
-    	/// References the Package that is to be merged with the receiving package of the PackageMerge.
-    	/// </summary>
-    	Package MergedPackage subsets DirectedRelationship.Target;
-    	/// <summary>
-    	/// References the Package that is being extended with the contents of the merged package of the PackageMerge.
-    	/// </summary>
-    	Package ReceivingPackage subsets DirectedRelationship.Source, Element.Owner;
     }
 
     /// <summary>
@@ -2191,6 +2066,77 @@ namespace MofImplementationLib.Model
     }
 
     /// <summary>
+    /// An ElementImport identifies a NamedElement in a Namespace other than the one that owns that NamedElement and allows the NamedElement to be referenced using an unqualified name in the Namespace owning the ElementImport.
+    /// </summary>
+    class ElementImport : DirectedRelationship
+    {
+    	/// <summary>
+    	/// Specifies the name that should be added to the importing Namespace in lieu of the name of the imported PackagableElement. The alias must not clash with any other member in the importing Namespace. By default, no alias is used.
+    	/// </summary>
+    	string Alias;
+    	/// <summary>
+    	/// Specifies the PackageableElement whose name is to be added to a Namespace.
+    	/// </summary>
+    	PackageableElement ImportedElement subsets DirectedRelationship.Target;
+    	/// <summary>
+    	/// Specifies the Namespace that imports a PackageableElement from another Namespace.
+    	/// </summary>
+    	Namespace ImportingNamespace subsets DirectedRelationship.Source, Element.Owner;
+    	/// <summary>
+    	/// Specifies the visibility of the imported PackageableElement within the importingNamespace, i.e., whether the  importedElement will in turn be visible to other Namespaces. If the ElementImport is public, the importedElement will be visible outside the importingNamespace while, if the ElementImport is private, it will not.
+    	/// </summary>
+    	VisibilityKind Visibility;
+    	/// <summary>
+    	/// The query getName() returns the name under which the imported PackageableElement will be known in the importing namespace.
+    	/// </summary>
+    	// spec:
+    	//     result = (if alias->notEmpty() then
+    	//       alias
+    	//     else
+    	//       importedElement.name
+    	//     endif)
+    	readonly string GetName();
+    }
+
+    /// <summary>
+    /// A Constraint is a condition or restriction expressed in natural language text or in a machine readable language for the purpose of declaring some of the semantics of an Element or set of Elements.
+    /// </summary>
+    class Constraint : PackageableElement
+    {
+    	/// <summary>
+    	/// The ordered set of Elements referenced by this Constraint.
+    	/// </summary>
+    	list<Element> ConstrainedElement;
+    	/// <summary>
+    	/// Specifies the Namespace that owns the Constraint.
+    	/// </summary>
+    	Namespace Context subsets NamedElement.Namespace;
+    	/// <summary>
+    	/// A condition that must be true when evaluated in order for the Constraint to be satisfied.
+    	/// </summary>
+    	containment ValueSpecification Specification subsets Element.OwnedElement;
+    }
+
+    /// <summary>
+    /// A PackageImport is a Relationship that imports all the non-private members of a Package into the Namespace owning the PackageImport, so that those Elements may be referred to by their unqualified names in the importingNamespace.
+    /// </summary>
+    class PackageImport : DirectedRelationship
+    {
+    	/// <summary>
+    	/// Specifies the Package whose members are imported into a Namespace.
+    	/// </summary>
+    	Package ImportedPackage subsets DirectedRelationship.Target;
+    	/// <summary>
+    	/// Specifies the Namespace that imports the members from a Package.
+    	/// </summary>
+    	Namespace ImportingNamespace subsets DirectedRelationship.Source, Element.Owner;
+    	/// <summary>
+    	/// Specifies the visibility of the imported PackageableElements within the importingNamespace, i.e., whether imported Elements will in turn be visible to other Namespaces. If the PackageImport is public, the imported Elements will be visible outside the importingNamespace, while, if the PackageImport is private, they will not.
+    	/// </summary>
+    	VisibilityKind Visibility;
+    }
+
+    /// <summary>
     /// A StringExpression is an Expression that specifies a String value that is derived by concatenating a sequence of operands with String values or a sequence of subExpressions, some of which might be template parameters.
     /// </summary>
     class StringExpression : TemplateableElement, Expression
@@ -2539,6 +2485,21 @@ namespace MofImplementationLib.Model
     }
 
     /// <summary>
+    /// A package merge defines how the contents of one package are extended by the contents of another package.
+    /// </summary>
+    class PackageMerge : DirectedRelationship
+    {
+    	/// <summary>
+    	/// References the Package that is to be merged with the receiving package of the PackageMerge.
+    	/// </summary>
+    	Package MergedPackage subsets DirectedRelationship.Target;
+    	/// <summary>
+    	/// References the Package that is being extended with the contents of the merged package of the PackageMerge.
+    	/// </summary>
+    	Package ReceivingPackage subsets DirectedRelationship.Source, Element.Owner;
+    }
+
+    /// <summary>
     /// A profile application is used to show which profiles have been applied to a package.
     /// </summary>
     class ProfileApplication : DirectedRelationship
@@ -2577,6 +2538,10 @@ namespace MofImplementationLib.Model
     /// </summary>
     class ConnectorEnd : MultiplicityElement
     {
+    	    /// <summary>
+		    /// The Connector of which the ConnectorEnd is the endpoint.
+		    /// </summary>
+		    Connector Connector subsets Element.Owner;
     	/// <summary>
     	/// A derived property referencing the corresponding end on the Association which types the Connector owing this ConnectorEnd, if any. It is derived by selecting the end at the same place in the ordering of Association ends as this ConnectorEnd.
     	/// </summary>
@@ -2668,6 +2633,65 @@ namespace MofImplementationLib.Model
     	/// The UseCase which includes the addition and owns the Include relationship.
     	/// </summary>
     	UseCase IncludingCase subsets DirectedRelationship.Source, NamedElement.Namespace;
+    }
+
+    /// <summary>
+    /// An OpaqueExpression is a ValueSpecification that specifies the computation of a collection of values either in terms of a UML Behavior or based on a textual statement in a language other than UML
+    /// </summary>
+    class OpaqueExpression : ValueSpecification
+    {
+    	/// <summary>
+    	/// Specifies the behavior of the OpaqueExpression as a UML Behavior.
+    	/// </summary>
+    	Behavior Behavior;
+    	/// <summary>
+    	/// A textual definition of the behavior of the OpaqueExpression, possibly in multiple languages.
+    	/// </summary>
+    	multi_list<string> Body;
+    	/// <summary>
+    	/// Specifies the languages used to express the textual bodies of the OpaqueExpression.  Languages are matched to body Strings by order. The interpretation of the body depends on the languages. If the languages are unspecified, they may be implicit from the expression body or the context.
+    	/// </summary>
+    	list<string> Language;
+    	/// <summary>
+    	/// If an OpaqueExpression is specified using a UML Behavior, then this refers to the single required return Parameter of that Behavior. When the Behavior completes execution, the values on this Parameter give the result of evaluating the OpaqueExpression.
+    	/// </summary>
+    	// spec:
+    	//     result = (if behavior = null then
+    	//     	null
+    	//     else
+    	//     	behavior.ownedParameter->first()
+    	//     endif)
+    	derived Parameter Result;
+    	/// <summary>
+    	/// The query isIntegral() tells whether an expression is intended to produce an Integer.
+    	/// </summary>
+    	// spec:
+    	//     result = (false)
+    	readonly bool IsIntegral();
+    	/// <summary>
+    	/// The query isNonNegative() tells whether an integer expression has a non-negative value.
+    	/// </summary>
+    	// pre:
+    	//     self.isIntegral()
+    	// spec:
+    	//     result = (false)
+    	readonly bool IsNonNegative();
+    	/// <summary>
+    	/// The query isPositive() tells whether an integer expression has a positive value.
+    	/// </summary>
+    	// spec:
+    	//     result = (false)
+    	// pre:
+    	//     self.isIntegral()
+    	readonly bool IsPositive();
+    	/// <summary>
+    	/// The query value() gives an integer value for an expression intended to produce one.
+    	/// </summary>
+    	// pre:
+    	//     self.isIntegral()
+    	// spec:
+    	//     result = (0)
+    	readonly int Value();
     }
 
     /// <summary>

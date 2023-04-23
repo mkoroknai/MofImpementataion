@@ -1,0 +1,4 @@
+		/// <summary>
+		/// The Connector of which the ConnectorEnd is the endpoint.
+		/// </summary>
+		Connector Connector subsets Element.Owner;

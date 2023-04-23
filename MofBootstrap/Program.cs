@@ -13,7 +13,13 @@ namespace MofBootstrap
         static void Main(string[] args)
         {
             //EmofXmi(true);
-            CmofXmi(false);
+            //CmofXmi(false);
+
+            var xmiSerializer = new MofXmiSerializer();
+            ImmutableModel model = xmiSerializer.ReadModelFromFile("../../../MOF.xmi");
+            MofGenerator mofGenerator = new MofGenerator(model);
+
+            mofGenerator.GenerateCompleteMof(false);
         }
 
         /// <summary>
@@ -25,7 +31,7 @@ namespace MofBootstrap
         /// if first input parameter is false, all the metaclasses/enums will be added
         /// </summary>
         /// <param name="removeUnknownTypedElements"></param>
-        static void EmofXmi(bool removeUnknownTypeElements)
+        static void EmofXmi(bool removeUnknownTypedElements)
         {
 
             var xmiSerializer = new MofXmiSerializer();
@@ -89,7 +95,7 @@ namespace MofBootstrap
             MergeHelper.MergePackages(mofEMOF, mofExtension, mofFactory);
 
 
-            if (removeUnknownTypeElements)
+            if (removeUnknownTypedElements)
             {
                 // setting up subsettedProperties in cmof
                 MergeHelper.SetSubsets(umlModel, mofEMOF, umlToMof);
@@ -194,12 +200,12 @@ namespace MofBootstrap
 
 
             // ----- Finally ------
-            // Merge MOF::Reflection into MOF::CMOFReflection -----------------------------------------------------------------------------------------
+            // Merge MOF::Reflection into MOF::CMOFReflection -------------------------------------------------------------------------
 
             MergeHelper.MergePackages(cmofReflection, mofReflection, mofFactory);
 
 
-            // Merge MOF::Extension into MOF::CMOFExtension -----------------------------------------------------------------------------------------
+            // Merge MOF::Extension into MOF::CMOFExtension ---------------------------------------------------------------------------
 
             MergeHelper.MergePackages(cmofExtension, mofExtension, mofFactory);
 
