@@ -9,7 +9,7 @@ using System.Linq;
 
 namespace MofBootstrap
 {
-    public static class UmlToMofHelper
+    public static class UmlToMof
     {
         static readonly string removedFileName = "RemovedElements.txt";
 
@@ -376,7 +376,7 @@ namespace MofBootstrap
         public static void AddAllReferencedClasses(PackageBuilder mof, MutableModel umlModel, MofFactory mofFactory, Dictionary<MutableObject, MutableObject> umlToMof)
         {
             int c;
-            while ((c = UmlToMofHelper.AddReferencedClasses(mof, umlModel, mofFactory, umlToMof)) != 0)
+            while ((c = AddReferencedClasses(mof, umlModel, mofFactory, umlToMof)) != 0)
             {
                 // adding classes that are referenced by new classes
                 Console.WriteLine("\t " + c + " referenced classes or enums added");

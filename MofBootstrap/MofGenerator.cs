@@ -7,11 +7,42 @@ using System.IO;
 using System.Linq;
 using System.Text;
 
+
+// copy this to the beginning of Mof.mm without the first two slashes:
+///// <summary>
+///// Boolean is used for logical expressions, consisting of the predefined values true and false.
+///// </summary>
+//const PrimitiveType Boolean;
+///// <summary>
+///// Integer is a primitive type representing integer values.
+///// </summary>
+//const PrimitiveType Integer;
+///// <summary>
+///// Real is a primitive type representing the mathematical concept of real.
+///// </summary>
+//const PrimitiveType Real;
+///// <summary>
+///// String is a sequence of characters in some suitable character set used to display information about the model. Character sets may include non-Roman alphabets and characters.
+///// </summary>
+//const PrimitiveType String;
+///// <summary>
+///// UnlimitedNatural is a primitive type representing unlimited natural values.
+///// </summary>
+//const PrimitiveType UnlimitedNatural;
+
+// copy this into ConnectorEnd in Mof.mm without the first two slashes:
+///// <summary>
+///// The Connector of which the ConnectorEnd is the endpoint.
+///// </summary>
+//Connector Connector subsets Element.Owner;
+///// <summary>
+
 namespace MofBootstrap
 {
     class MofGenerator
     {
 
+        MutableModel MofModel;
         PackageBuilder MofReflection;
         PackageBuilder MofExtension;
         PackageBuilder CmofReflection;
@@ -28,24 +59,24 @@ namespace MofBootstrap
 
         public MofGenerator(ImmutableModel model)
         {
-            MutableModel mofModel = model.ToMutable();
+            MofModel = model.ToMutable();
             var mutableGroup = model.ModelGroup.ToMutable();
             UmlModel = mutableGroup.Models.First(m => m.Name.Contains("UML.xmi"));
 
-            MofFactory = new MofFactory(mofModel, ModelFactoryFlags.DontMakeObjectsCreated);
+            MofFactory = new MofFactory(MofModel, ModelFactoryFlags.DontMakeObjectsCreated);
 
             // grabbing packages
-            MofReflection = mofModel.Objects.OfType<PackageBuilder>().First(pb => pb.Name == "Reflection");
-            MofExtension = mofModel.Objects.OfType<PackageBuilder>().First(pb => pb.Name == "Extension");
-            CmofReflection = mofModel.Objects.OfType<PackageBuilder>().First(pb => pb.Name == "CMOFReflection");
-            CmofExtension = mofModel.Objects.OfType<PackageBuilder>().First(pb => pb.Name == "CMOFExtension");
-            MofCommon = mofModel.Objects.OfType<PackageBuilder>().First(pb => pb.Name == "Common");
-            MofEmof = mofModel.Objects.OfType<PackageBuilder>().First(pb => pb.Name == "EMOF");
-            MofIdentifiers = mofModel.Objects.OfType<PackageBuilder>().First(pb => pb.Name == "Identifiers");
-            Cmof = mofModel.Objects.OfType<PackageBuilder>().First(pb => pb.Name == "CMOF");
+            MofReflection = MofModel.Objects.OfType<PackageBuilder>().First(pb => pb.Name == "Reflection");
+            MofExtension = MofModel.Objects.OfType<PackageBuilder>().First(pb => pb.Name == "Extension");
+            CmofReflection = MofModel.Objects.OfType<PackageBuilder>().First(pb => pb.Name == "CMOFReflection");
+            CmofExtension = MofModel.Objects.OfType<PackageBuilder>().First(pb => pb.Name == "CMOFExtension");
+            MofCommon = MofModel.Objects.OfType<PackageBuilder>().First(pb => pb.Name == "Common");
+            MofEmof = MofModel.Objects.OfType<PackageBuilder>().First(pb => pb.Name == "EMOF");
+            MofIdentifiers = MofModel.Objects.OfType<PackageBuilder>().First(pb => pb.Name == "Identifiers");
+            Cmof = MofModel.Objects.OfType<PackageBuilder>().First(pb => pb.Name == "CMOF");
 
             // renaming conflicting element names like string, object, etc.
-            MergeHelper.RenameMofProperties(mofModel);
+            RenameMofProperties();
         }
 
         public void GenerateEssentialMof(bool removeUnknownTypedElements,
@@ -159,7 +190,7 @@ namespace MofBootstrap
 
         public Dictionary<MutableObject, MutableObject> MergeUmlToMofReflection()
         {
-            return UmlToMofHelper.UmlToMofReflectionEmof(UmlModel, MofReflection, MofFactory);
+            return UmlToMof.UmlToMofReflectionEmof(UmlModel, MofReflection, MofFactory);
         }
 
         public void MergeMofReflectionIntoMofExtension()
@@ -224,13 +255,13 @@ namespace MofBootstrap
             // setting up subsettedProperties in emof
             MergeHelper.SetSubsets(UmlModel, MofEmof, umlToMof);
             // removing unnecessary properties and methods
-            UmlToMofHelper.RemoveUnknownProperties(MofEmof);
+            UmlToMof.RemoveUnknownProperties(MofEmof);
         }
 
         public void AddAllReferencedClassesToEmof(Dictionary<MutableObject, MutableObject> umlToMof)
         {
             // adding classes that are referenced by elements in existing classes
-            UmlToMofHelper.AddAllReferencedClasses(MofEmof, UmlModel, MofFactory, umlToMof);
+            UmlToMof.AddAllReferencedClasses(MofEmof, UmlModel, MofFactory, umlToMof);
             // setting up subsettedProperties in emof
             MergeHelper.SetSubsets(UmlModel, MofEmof, umlToMof);
         }
@@ -240,13 +271,13 @@ namespace MofBootstrap
             // setting up subsettedProperties in cmof
             MergeHelper.SetSubsets(UmlModel, Cmof, umlToMof);
             // removing unnecessary properties and methods
-            UmlToMofHelper.RemoveUnknownProperties(Cmof);
+            UmlToMof.RemoveUnknownProperties(Cmof);
         }
 
         public void AddAllReferencedClassesToCmof(Dictionary<MutableObject, MutableObject> umlToMof)
         {
             // adding classes that are referenced by elements in existing classes
-            UmlToMofHelper.AddAllReferencedClasses(Cmof, UmlModel, MofFactory, umlToMof);
+            UmlToMof.AddAllReferencedClasses(Cmof, UmlModel, MofFactory, umlToMof);
             // setting up subsettedProperties in cmof
             MergeHelper.SetSubsets(UmlModel, Cmof, umlToMof);
         }
@@ -269,6 +300,20 @@ namespace MofBootstrap
             var generator = new MofModelToMetaModelGenerator(Cmof.ToImmutable().PackagedElement);
             var generatedCode = generator.Generate("MofImplementationLib.Model", "Mof", "http://www.omg.org/spec/MOF");
             File.WriteAllText(fileName, generatedCode);
+        }
+
+        public void RenameMofProperties()
+        {
+            foreach (var pcks in MofModel.Objects.OfType<PackageBuilder>())
+            {
+                foreach (var cls in pcks.PackagedElement)
+                {
+                    if (cls is ClassBuilder cb)
+                    {
+                        MergeHelper.RenameMofProperties(cb);
+                    }
+                }
+            }
         }
     }
 }

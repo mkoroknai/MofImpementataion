@@ -7,56 +7,11 @@ using System.Text;
 using System.IO;
 using System.Linq;
 
-// copy this to the beginning of Mof.mm
-///// <summary>
-///// Boolean is used for logical expressions, consisting of the predefined values true and false.
-///// </summary>
-//const PrimitiveType Boolean;
-///// <summary>
-///// Integer is a primitive type representing integer values.
-///// </summary>
-//const PrimitiveType Integer;
-///// <summary>
-///// Real is a primitive type representing the mathematical concept of real.
-///// </summary>
-//const PrimitiveType Real;
-///// <summary>
-///// String is a sequence of characters in some suitable character set used to display information about the model. Character sets may include non-Roman alphabets and characters.
-///// </summary>
-//const PrimitiveType String;
-///// <summary>
-///// UnlimitedNatural is a primitive type representing unlimited natural values.
-///// </summary>
-//const PrimitiveType UnlimitedNatural;
-
-// copy this into ConnectorEnd in Mof.mm
-///// <summary>
-///// The Connector of which the ConnectorEnd is the endpoint.
-///// </summary>
-//Connector Connector subsets Element.Owner;
-///// <summary>
 
 namespace MofBootstrap
 {
     public static class MergeHelper
     {
-        /// <summary>
-        /// renames properties of all classes in mofModel
-        /// </summary>
-        /// <param name="mofModel"></param>
-        public static void RenameMofProperties(MutableModel mofModel)
-        {
-            foreach (var pcks in mofModel.Objects.OfType<PackageBuilder>())
-            {
-                foreach (var cls in pcks.PackagedElement)
-                {
-                    if(cls is ClassBuilder cb)
-                    {
-                        MergeHelper.RenameMofProperties(cb);
-                    }
-                }
-            }
-        }
 
         /// <summary>
         /// renames properties of one class
