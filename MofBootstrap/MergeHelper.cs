@@ -230,7 +230,7 @@ namespace MofBootstrap
                 }
                 else
                 {
-                    if (param.LowerValue != null) Console.WriteLine("!!!!!!!!!!!param.LowerValue is not of type LiteralInteger!!!!!!!!!!!");
+                    if (param.LowerValue != null) Console.WriteLine("!!!!!!!!!!!param.LowerValue is not of type LiteralInteger or LiteralString!!!!!!!!!!!");
                 }
                 if (param.UpperValue is LiteralUnlimitedNaturalBuilder uv) // in the UML.xmi file, upperValue always seems to be of type LiteralUnlimitedNatural
                 {
