@@ -1,7 +1,15 @@
 ﻿using MetaDslx.Modeling;
+using MetaDslx.BuildTasks;
+using MetaDslx.Languages.Antlr4Roslyn.Compilation;
+using MetaDslx.Languages.Antlr4Roslyn.Syntax.InternalSyntax;
+using MetaDslx.Languages.Meta;
+using MetaDslx.Languages.MetaGenerator.Compilation;
+using Microsoft.CodeAnalysis;
+using System;
+using System.Collections.Generic;
 using MofImplementationLib.Generator;
 using MofImplementationLib.Model;
-using System;
+using System.Linq;
 using System.IO;
 
 namespace MofTest
@@ -11,7 +19,17 @@ namespace MofTest
         static void Main(string[] args)
         {
             //MofTestConstantsGen.TestUmlMethods();
-            Test001();
+            //Test001();
+            //MofXmiSerializer xmiSerializer = new MofXmiSerializer();
+
+            //var model = xmiSerializer.ReadModelFromFile("MOF.xmi");
+            //var mutableGroup = model.ModelGroup.ToMutable();
+            //var umlModel = mutableGroup.Models.First(m => m.Name.Contains("UML.xmi"));
+
+            //umlModel.
+
+            TestGraph();
+
         }
 
         static void Test001()
@@ -86,7 +104,7 @@ namespace MofTest
             class2.Generalization.Add(general2);
 
             PackageBuilder package = mofFactory.Package();
-            package.Name = "MOF_modell_teszt";
+            package.Name = "MOF_model_test";
 
             package.PackagedElement.Add(class0);
             package.PackagedElement.Add(class1);
@@ -99,6 +117,158 @@ namespace MofTest
             var generator = new MofModelToMetaModelGenerator(package.ToImmutable().PackagedElement);
             var generatedCode = generator.Generate("SampleNamespace", "MOF_modell_teszt", "http://example.org/mytesztlang/0.1");
             File.WriteAllText("ModellTeszt.mm", generatedCode);
+        }
+
+        static void TestGraph()
+        {
+            MutableModel model = new MutableModel("TestGraph");
+            MofFactory factory = new MofFactory(model);
+
+            PrimitiveTypeBuilder stringType = factory.PrimitiveType();
+            PrimitiveTypeBuilder intType = factory.PrimitiveType();
+            stringType.Name = "String";
+            intType.Name = "Integer";
+
+
+            ClassBuilder vertex = factory.Class();
+            vertex.Name = "Vertex";
+
+            // vertex id property
+            PropertyBuilder vertexId = factory.Property();
+            vertexId.Type = stringType;
+            vertexId.Name = "ID";
+
+            // neighborCount
+            PropertyBuilder vertexNeighborCount = factory.Property();
+            vertexNeighborCount.Type = intType;
+            vertexNeighborCount.Name = "NeighborCount";
+
+
+            // vertexNeighbors
+            PropertyBuilder vertexNeighbors = factory.Property();
+            var vertexNeighborsUpperValue = factory.LiteralUnlimitedNatural();
+            vertexNeighborsUpperValue.Value = long.MaxValue;
+            vertexNeighbors.Type = vertex;
+            vertexNeighbors.Name = "Neighbors";
+            vertexNeighbors.IsOrdered = true;
+            vertexNeighbors.IsUnique = true;
+            vertexNeighbors.UpperValue = vertexNeighborsUpperValue;
+
+            // adding attributes to vertex
+            vertex.OwnedAttribute.Add(vertexId);
+            vertex.OwnedAttribute.Add(vertexNeighborCount);
+            vertex.OwnedAttribute.Add(vertexNeighbors);
+
+            // add edge operation
+            OperationBuilder vertexAddEdge = factory.Operation();
+            vertexAddEdge.Name = "AddEdge";
+            ParameterBuilder vertexAddEdgeInput = factory.Parameter();
+            vertexAddEdgeInput.Name = "neighbor";
+            vertexAddEdgeInput.Direction = ParameterDirectionKind.In;
+            vertexAddEdgeInput.Type = vertex;
+
+            vertexAddEdge.OwnedParameter.Add(vertexAddEdgeInput);
+
+
+            // remove edge operation
+            OperationBuilder vertexRemoveEdge = factory.Operation();
+            vertexRemoveEdge.Name = "RemoveEdge";
+            ParameterBuilder vertexRemoveEdgeInput = factory.Parameter();
+            vertexRemoveEdgeInput.Name = "neighbor";
+            vertexRemoveEdgeInput.Direction = ParameterDirectionKind.In;
+            vertexRemoveEdgeInput.Type = vertex;
+
+            vertexRemoveEdge.OwnedParameter.Add(vertexRemoveEdgeInput);
+
+            vertex.OwnedOperation.Add(vertexAddEdge);
+            vertex.OwnedOperation.Add(vertexRemoveEdge);
+
+
+
+            ClassBuilder graph = factory.Class();
+            graph.Name = "UndirectedGraph";
+
+            PropertyBuilder graphSize = factory.Property();
+            graphSize.Name = "Size";
+            graphSize.Type = intType;
+
+            PropertyBuilder graphVertices = factory.Property();
+            graphVertices.Type = vertex;
+            graphVertices.Name = "Vertices";
+            foreach(var sp in vertexNeighbors.SubsettedProperty)
+            {
+                Console.WriteLine(sp.Name);
+            }
+            graphVertices.IsOrdered = true;
+            graphVertices.IsUnique = true;
+            var graphVerticesUpperValue = factory.LiteralUnlimitedNatural();
+            graphVerticesUpperValue.Value = long.MaxValue;
+            graphVertices.UpperValue = graphVerticesUpperValue;
+
+            graph.OwnedAttribute.Add(graphSize);
+            graph.OwnedAttribute.Add(graphVertices);
+
+            OperationBuilder graphAddVertex = factory.Operation();
+            graphAddVertex.Name = "AddVertex";
+            ParameterBuilder graphAddVertexInput = factory.Parameter();
+            graphAddVertexInput.Name = "vertex";
+            graphAddVertexInput.Type = vertex;
+            graphAddVertexInput.Direction = ParameterDirectionKind.In;
+
+            graphAddVertex.OwnedParameter.Add(graphAddVertexInput);
+
+            OperationBuilder graphRemoveVertex = factory.Operation();
+            graphRemoveVertex.Name = "RemoveVertex";
+            ParameterBuilder graphRemoveVertexInput = factory.Parameter();
+            graphRemoveVertexInput.Name = "vertex";
+            graphRemoveVertexInput.Type = vertex;
+            graphRemoveVertexInput.Direction = ParameterDirectionKind.In;
+
+            graphRemoveVertex.OwnedParameter.Add(graphRemoveVertexInput);
+
+            OperationBuilder graphAddPair = factory.Operation();
+            graphAddPair.Name = "AddPair";
+            ParameterBuilder graphAddPairFirstInput = factory.Parameter();
+            ParameterBuilder graphAddPairSecondInput = factory.Parameter();
+            graphAddPairFirstInput.Name = "first";
+            graphAddPairSecondInput.Name = "second";
+            graphAddPairFirstInput.Type = vertex;
+            graphAddPairSecondInput.Type = vertex;
+            graphAddPairFirstInput.Direction = ParameterDirectionKind.In;
+            graphAddPairSecondInput.Direction = ParameterDirectionKind.In;
+
+            graphAddPair.OwnedParameter.Add(graphAddPairFirstInput);
+            graphAddPair.OwnedParameter.Add(graphAddPairSecondInput);
+
+
+            graph.OwnedOperation.Add(graphAddVertex);
+            graph.OwnedOperation.Add(graphRemoveVertex);
+            graph.OwnedOperation.Add(graphAddPair);
+            
+
+            PackageBuilder package = factory.Package();
+            package.Name = "UndirectedGraph";
+
+            package.PackagedElement.Add(vertex);
+            package.PackagedElement.Add(graph);
+
+
+            //vertexNeighbors.SubsettedProperty.Add(graphVertices);
+
+
+            // generating file
+            Console.WriteLine(Environment.NewLine + "Creating .mm file" + Environment.NewLine);
+            //var generator = new MofModelToMetaModelGenerator(mofModel.ToImmutable().Objects);
+            var generator = new MofModelToMetaModelGenerator(package.ToImmutable().PackagedElement);
+            var generatedCode = generator.Generate("SampleNamespace", "UndirectedGraph", "http://example.org/mytestlang/0.1");
+
+
+            string mm_filepath = "../../../Model/UndirectedGraph.mm";
+            File.WriteAllText(mm_filepath, generatedCode);
+
+            //MetaGeneratorCompiler mc = new MetaGeneratorCompiler(mm_filepath, "../../../Model/");
+            //mc.Compile();
+
         }
     }
 }
