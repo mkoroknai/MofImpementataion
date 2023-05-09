@@ -1,8 +1,8 @@
 namespace MofImplementationLib.Model
 {
     metamodel Mof(Uri="http://www.omg.org/spec/MOF"); 
-
-        /// <summary>
+    
+    /// <summary>
     /// Boolean is used for logical expressions, consisting of the predefined values true and false.
     /// </summary>
     const PrimitiveType Boolean;
@@ -2538,10 +2538,11 @@ namespace MofImplementationLib.Model
     /// </summary>
     class ConnectorEnd : MultiplicityElement
     {
-    	    /// <summary>
-		    /// The Connector of which the ConnectorEnd is the endpoint.
-		    /// </summary>
-		    Connector Connector subsets Element.Owner;
+        /// <summary>
+        /// The Connector of which the ConnectorEnd is the endpoint.
+        /// </summary>
+        Connector Connector subsets Element.Owner;
+        /// <summary>
     	/// <summary>
     	/// A derived property referencing the corresponding end on the Association which types the Connector owing this ConnectorEnd, if any. It is derived by selecting the end at the same place in the ordering of Association ends as this ConnectorEnd.
     	/// </summary>
