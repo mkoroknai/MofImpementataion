@@ -45,7 +45,7 @@ namespace MofTestProjDotNetCore
             Console.WriteLine("TestAssociation (" + ass.Name + ")");
             Console.WriteLine();
 
-            TestList(ass.EndType, TstConstants.Association_EndType);
+            TestList(ass.EndType, TestConstants.Association_EndType);
         }
 
         [TestMethod]
@@ -58,10 +58,10 @@ namespace MofTestProjDotNetCore
             Console.WriteLine("TestBehavioralFeature (" + bfeat.Name + ")");
             Console.WriteLine();
 
-            TestList(bfeat.InputParameters(), TstConstants.BehavioralFeature_InputParameters);
-            Assert.AreEqual(bfeat.IsDistinguishableFrom(ne, ne.Namespace), TstConstants.BehavioralFeature_IsDistinguishableFrom);
+            TestList(bfeat.InputParameters(), TestConstants.BehavioralFeature_InputParameters);
+            Assert.AreEqual(bfeat.IsDistinguishableFrom(ne, ne.Namespace), TestConstants.BehavioralFeature_IsDistinguishableFrom);
 
-            TestList(bfeat.OutputParameters(), TstConstants.BehavioralFeature_OutputParameters);
+            TestList(bfeat.OutputParameters(), TestConstants.BehavioralFeature_OutputParameters);
         }
 
 
@@ -78,21 +78,21 @@ namespace MofTestProjDotNetCore
             Console.WriteLine();
 
             Console.WriteLine("  BehavioredClassifier");
-            Assert.AreEqual(behavior.BehavioredClassifier(from).Name, TstConstants.Behavior_BehavioredClassifier);
+            Assert.AreEqual(behavior.BehavioredClassifier(from).Name, TestConstants.Behavior_BehavioredClassifier);
             Console.WriteLine("    " + behavior.BehavioredClassifier(from));
 
             Assert.IsTrue(behavior.BehavioredClassifier(from) is BehavioredClassifierBuilder);
 
             Console.WriteLine("  InputParameters");
-            TestList(behavior.InputParameters(), TstConstants.Behavior_InputParameters);
+            TestList(behavior.InputParameters(), TestConstants.Behavior_InputParameters);
 
             Console.WriteLine("  OutputParameters");
-            TestList(behavior.OutputParameters(), TstConstants.Behavior_OutputParameters);
+            TestList(behavior.OutputParameters(), TestConstants.Behavior_OutputParameters);
 
-            if (TstConstants.Behavior_Context == "null")
+            if (TestConstants.Behavior_Context == "null")
                 Assert.IsNull(behavior.Context);
             else
-                Assert.AreEqual(behavior.Context, TstConstants.Behavior_Context);
+                Assert.AreEqual(behavior.Context, TestConstants.Behavior_Context);
         }
 
 
@@ -108,37 +108,37 @@ namespace MofTestProjDotNetCore
             Console.WriteLine();
 
 
-            TestList(classifier.AllAttributes(), TstConstants.Classifier_AllAttributes);
+            TestList(classifier.AllAttributes(), TestConstants.Classifier_AllAttributes);
 
-            TestList(classifier.AllFeatures(), TstConstants.Classifier_AllFeatures);
+            TestList(classifier.AllFeatures(), TestConstants.Classifier_AllFeatures);
 
-            TestList(classifier.AllParents(), TstConstants.Classifier_AllParents);
+            TestList(classifier.AllParents(), TestConstants.Classifier_AllParents);
 
-            TestList(classifier.AllRealizedInterfaces(), TstConstants.Classifier_AllRealizedInterfaces);
+            TestList(classifier.AllRealizedInterfaces(), TestConstants.Classifier_AllRealizedInterfaces);
 
-            Assert.AreEqual(classifier.AllSlottableFeatures().Count, TstConstants.Classifier_AllSlottableFeatures_Count);
+            Assert.AreEqual(classifier.AllSlottableFeatures().Count, TestConstants.Classifier_AllSlottableFeatures_Count);
 
-            TestList(classifier.General, TstConstants.Classifier_General);
+            TestList(classifier.General, TestConstants.Classifier_General);
 
-            TestList(classifier.InheritedMember, TstConstants.Classifier_InheritedMember);
+            TestList(classifier.InheritedMember, TestConstants.Classifier_InheritedMember);
 
-            Assert.AreEqual(classifier.ConformsTo(other), TstConstants.Classifier_ConformsTo);
+            Assert.AreEqual(classifier.ConformsTo(other), TestConstants.Classifier_ConformsTo);
 
-            TestList(classifier.DirectlyRealizedInterfaces(), TstConstants.Classifier_DirectlyRealizedInterfaces);
+            TestList(classifier.DirectlyRealizedInterfaces(), TestConstants.Classifier_DirectlyRealizedInterfaces);
 
-            Assert.AreEqual(classifier.HasVisibilityOf(other), TstConstants.Classifier_HasVisibilityOf);
+            Assert.AreEqual(classifier.HasVisibilityOf(other), TestConstants.Classifier_HasVisibilityOf);
 
-            TestList(classifier.Inherit(inhs), TstConstants.Classifier_Inherit);
+            TestList(classifier.Inherit(inhs), TestConstants.Classifier_Inherit);
 
-            Assert.AreEqual(classifier.InheritableMembers(other as ClassifierBuilder).Count, TstConstants.Classifier_InheritableMembers_Count);
+            Assert.AreEqual(classifier.InheritableMembers(other as ClassifierBuilder).Count, TestConstants.Classifier_InheritableMembers_Count);
 
-            Assert.AreEqual(classifier.IsSubstitutableFor(other as ClassifierBuilder), TstConstants.Classifier_IsSubstitutableFor);
+            Assert.AreEqual(classifier.IsSubstitutableFor(other as ClassifierBuilder), TestConstants.Classifier_IsSubstitutableFor);
 
-            Assert.AreEqual(classifier.IsTemplate(), TstConstants.Classifier_IsTemplate);
+            Assert.AreEqual(classifier.IsTemplate(), TestConstants.Classifier_IsTemplate);
 
-            Assert.AreEqual(classifier.MaySpecializeType(other as ClassifierBuilder), TstConstants.Classifier_MaySpecializeType);
+            Assert.AreEqual(classifier.MaySpecializeType(other as ClassifierBuilder), TestConstants.Classifier_MaySpecializeType);
 
-            TestList(classifier.Parents(), TstConstants.Classifier_Parents);
+            TestList(classifier.Parents(), TestConstants.Classifier_Parents);
         }
 
         [TestMethod]
@@ -151,9 +151,9 @@ namespace MofTestProjDotNetCore
             Console.WriteLine();
 
 
-            TestList(class_.Extension, TstConstants.Class_Extension);
+            TestList(class_.Extension, TestConstants.Class_Extension);
 
-            TestList(class_.SuperClass, TstConstants.Class_SuperClass);
+            TestList(class_.SuperClass, TestConstants.Class_SuperClass);
 
         }
         [TestMethod]
@@ -165,7 +165,7 @@ namespace MofTestProjDotNetCore
             Console.WriteLine("TestConnectableElement (" + ce.Name + ")");
             Console.WriteLine();
 
-            Assert.AreEqual(ce.End.Count, TstConstants.ConnectableElement_End_Count);
+            Assert.AreEqual(ce.End.Count, TestConstants.ConnectableElement_End_Count);
         }
         [TestMethod]
         public void TestConnectionPointReference()
@@ -178,7 +178,7 @@ namespace MofTestProjDotNetCore
             Console.WriteLine("TestConnectionPointReference (" + cpr.Name + ")");
             Console.WriteLine();
 
-            Assert.AreEqual(cpr.IsConsistentWith(re), TstConstants.ConnectionPointReference_IsConsistentWith);
+            Assert.AreEqual(cpr.IsConsistentWith(re), TestConstants.ConnectionPointReference_IsConsistentWith);
         }
 
         [TestMethod]
@@ -191,7 +191,7 @@ namespace MofTestProjDotNetCore
             Console.WriteLine();
 
 
-            Assert.AreEqual(ce01.DefiningEnd.Name, TstConstants.ConnectorEnd_DefiningEnd);
+            Assert.AreEqual(ce01.DefiningEnd.Name, TestConstants.ConnectorEnd_DefiningEnd);
         }
         [TestMethod]
         public void TestConnector()
@@ -202,7 +202,7 @@ namespace MofTestProjDotNetCore
             Console.WriteLine("TestConnector (" + c.Name + ")");
             Console.WriteLine();
 
-            Assert.AreEqual(c.Kind.ToString(), TstConstants.Connector_Kind);
+            Assert.AreEqual(c.Kind.ToString(), TestConstants.Connector_Kind);
         }
         [TestMethod]
         public void TestDeploymentTarget()
@@ -213,7 +213,7 @@ namespace MofTestProjDotNetCore
             Console.WriteLine("TestDeploymentTarget (" + dt.Name + ")");
             Console.WriteLine();
 
-            TestList(dt.DeployedElement, TstConstants.DeploymentTarget_DeployedElement);
+            TestList(dt.DeployedElement, TestConstants.DeploymentTarget_DeployedElement);
         }
         [TestMethod]
         public void TestElementImport()
@@ -224,7 +224,7 @@ namespace MofTestProjDotNetCore
             Console.WriteLine("TestElementImport (" + ei.Alias + ")");
             Console.WriteLine();
 
-            Assert.AreEqual(ei.GetName(), TstConstants.ElementImport_GetName);
+            Assert.AreEqual(ei.GetName(), TestConstants.ElementImport_GetName);
         }
         [TestMethod]
         public void TestElement()
@@ -235,9 +235,9 @@ namespace MofTestProjDotNetCore
             Console.WriteLine("TestElement (" + (e as NamedElementBuilder).Name + ")");
             Console.WriteLine();
 
-            Assert.AreEqual(e.AllOwnedElements().Count, TstConstants.Element_AllOwnedElements_Count);
+            Assert.AreEqual(e.AllOwnedElements().Count, TestConstants.Element_AllOwnedElements_Count);
 
-            Assert.AreEqual(e.MustBeOwned(), TstConstants.Element_MustBeOwned);
+            Assert.AreEqual(e.MustBeOwned(), TestConstants.Element_MustBeOwned);
         }
         [TestMethod]
         public void TestEncapsulatedClassifier()
@@ -248,7 +248,7 @@ namespace MofTestProjDotNetCore
             Console.WriteLine("TestEncapsulatedClassifier (" + e.Name + ")");
             Console.WriteLine();
 
-            TestList(e.OwnedPort, TstConstants.EncapsulatedClassifier_OwnedPort);
+            TestList(e.OwnedPort, TestConstants.EncapsulatedClassifier_OwnedPort);
         }
         [TestMethod]
         public void TestEnumerationLiteral()
@@ -259,7 +259,7 @@ namespace MofTestProjDotNetCore
             Console.WriteLine("TestEnumerationLiteral (" + e.Name + ")");
             Console.WriteLine();
 
-            Assert.AreEqual(e.Classifier.Name, TstConstants.EnumerationLiteral_Classifier);
+            Assert.AreEqual(e.Classifier.Name, TestConstants.EnumerationLiteral_Classifier);
         }
 
         [TestMethod]
@@ -271,9 +271,9 @@ namespace MofTestProjDotNetCore
             Console.WriteLine("TestExtensionEnd (" + e.Name + ")");
             Console.WriteLine();
 
-            Assert.AreEqual(e.Lower, TstConstants.ExtensionEnd_Lower);
+            Assert.AreEqual(e.Lower, TestConstants.ExtensionEnd_Lower);
 
-            Assert.AreEqual(e.LowerBound(), TstConstants.ExtensionEnd_LowerBound);
+            Assert.AreEqual(e.LowerBound(), TestConstants.ExtensionEnd_LowerBound);
         }
         [TestMethod]
         public void TestExtension()
@@ -284,11 +284,11 @@ namespace MofTestProjDotNetCore
             Console.WriteLine("TestExtension (" + e.Name + ")");
             Console.WriteLine();
 
-            Assert.AreEqual(e.IsRequired, TstConstants.Extension_IsRequired);
+            Assert.AreEqual(e.IsRequired, TestConstants.Extension_IsRequired);
 
-            Assert.AreEqual(e.Metaclass.Name, TstConstants.Extension_MetaClass);
+            Assert.AreEqual(e.Metaclass.Name, TestConstants.Extension_MetaClass);
 
-            Assert.AreEqual(e.MetaclassEnd().Name, TstConstants.Extension_MetaClassEnd);
+            Assert.AreEqual(e.MetaclassEnd().Name, TestConstants.Extension_MetaClassEnd);
         }
         [TestMethod]
         public void TestLiteralBoolean()
@@ -299,9 +299,9 @@ namespace MofTestProjDotNetCore
             Console.WriteLine("TestLiteralBoolean (" + e.Name + ")");
             Console.WriteLine();
 
-            Assert.AreEqual(e.BooleanValue(), TstConstants.LiteralBoolean_BooleanValue);
+            Assert.AreEqual(e.BooleanValue(), TestConstants.LiteralBoolean_BooleanValue);
 
-            Assert.AreEqual(e.IsComputable(), TstConstants.LiteralBoolean_IsComputable);
+            Assert.AreEqual(e.IsComputable(), TestConstants.LiteralBoolean_IsComputable);
         }
         [TestMethod]
         public void TestLiteralInteger()
@@ -312,9 +312,9 @@ namespace MofTestProjDotNetCore
             Console.WriteLine("TestLiteralInteger (" + e.Name + ")");
             Console.WriteLine();
 
-            Assert.AreEqual(e.IntegerValue(), TstConstants.LiteralInteger_IntegerValue);
+            Assert.AreEqual(e.IntegerValue(), TestConstants.LiteralInteger_IntegerValue);
 
-            Assert.AreEqual(e.IsComputable(), TstConstants.LiteralInteger_IsComputable);
+            Assert.AreEqual(e.IsComputable(), TestConstants.LiteralInteger_IsComputable);
         }
         [TestMethod]
         public void TestLiteralNull()
@@ -325,9 +325,9 @@ namespace MofTestProjDotNetCore
             Console.WriteLine("TestLiteralNull (" + e.Name + ")");
             Console.WriteLine();
 
-            Assert.AreEqual(e.IsNull(), TstConstants.LiteralNull_IsNull);
+            Assert.AreEqual(e.IsNull(), TestConstants.LiteralNull_IsNull);
 
-            Assert.AreEqual(e.IsComputable(), TstConstants.LiteralNull_IsComputable);
+            Assert.AreEqual(e.IsComputable(), TestConstants.LiteralNull_IsComputable);
         }
         [TestMethod]
         public void TestLiteralReal()
@@ -338,8 +338,8 @@ namespace MofTestProjDotNetCore
             Console.WriteLine("TestLiteralReal (" + e.Name + ")");
             Console.WriteLine();
 
-            Assert.AreEqual(e.RealValue(), TstConstants.LiteralReal_RealValue, 0.01);
-            Assert.AreEqual(e.IsComputable(), TstConstants.LiteralReal_IsComputable);
+            Assert.AreEqual(e.RealValue(), TestConstants.LiteralReal_RealValue, 0.01);
+            Assert.AreEqual(e.IsComputable(), TestConstants.LiteralReal_IsComputable);
         }
         [TestMethod]
         public void TestLiteralString()
@@ -350,8 +350,8 @@ namespace MofTestProjDotNetCore
             Console.WriteLine("TestLiteralString (" + e.Name + ")");
             Console.WriteLine();
 
-            Assert.AreEqual(e.StringValue(), TstConstants.LiteralString_StringValue);
-            Assert.AreEqual(e.IsComputable(), TstConstants.LiteralString_IsComputable);
+            Assert.AreEqual(e.StringValue(), TestConstants.LiteralString_StringValue);
+            Assert.AreEqual(e.IsComputable(), TestConstants.LiteralString_IsComputable);
         }
         [TestMethod]
         public void TestLiteralUnlimitedNatural()
@@ -362,8 +362,8 @@ namespace MofTestProjDotNetCore
             Console.WriteLine("TestLiteralUnlimitedNatural (" + e.Name + ")");
             Console.WriteLine();
 
-            Assert.AreEqual(e.UnlimitedValue(), TstConstants.LiteralUnlimitedNatural_UnlimitedValue);
-            Assert.AreEqual(e.IsComputable(), TstConstants.LiteralUnlimitedNatural_IsComputable);
+            Assert.AreEqual(e.UnlimitedValue(), TestConstants.LiteralUnlimitedNatural_UnlimitedValue);
+            Assert.AreEqual(e.IsComputable(), TestConstants.LiteralUnlimitedNatural_IsComputable);
         }
         [TestMethod]
         public void TestMultiplicityElement()
@@ -374,14 +374,14 @@ namespace MofTestProjDotNetCore
             Console.WriteLine("TestMultiplicityElement (" + (me as NamedElementBuilder).Name + ")");
             Console.WriteLine();
 
-            Assert.AreEqual(me.CompatibleWith(me), TstConstants.MultiplicityElement_CompatibleWith);
-            Assert.AreEqual(me.Lower, TstConstants.MultiplicityElement_Lower);
-            Assert.AreEqual(me.Upper, TstConstants.MultiplicityElement_Upper);
-            Assert.AreEqual(me.IncludesMultiplicity(me), TstConstants.MultiplicityElement_IncludesMultiplicity);
-            Assert.AreEqual(me.Is(0, 100), TstConstants.MultiplicityElement_Is);
-            Assert.AreEqual(me.IsMultivalued(), TstConstants.MultiplicityElement_IsMultivalued);
-            Assert.AreEqual(me.LowerBound(), TstConstants.MultiplicityElement_LowerBound);
-            Assert.AreEqual(me.UpperBound(), TstConstants.MultiplicityElement_UpperBound);
+            Assert.AreEqual(me.CompatibleWith(me), TestConstants.MultiplicityElement_CompatibleWith);
+            Assert.AreEqual(me.Lower, TestConstants.MultiplicityElement_Lower);
+            Assert.AreEqual(me.Upper, TestConstants.MultiplicityElement_Upper);
+            Assert.AreEqual(me.IncludesMultiplicity(me), TestConstants.MultiplicityElement_IncludesMultiplicity);
+            Assert.AreEqual(me.Is(0, 100), TestConstants.MultiplicityElement_Is);
+            Assert.AreEqual(me.IsMultivalued(), TestConstants.MultiplicityElement_IsMultivalued);
+            Assert.AreEqual(me.LowerBound(), TestConstants.MultiplicityElement_LowerBound);
+            Assert.AreEqual(me.UpperBound(), TestConstants.MultiplicityElement_UpperBound);
         }
         [TestMethod]
         public void TestNamedElement()
@@ -392,12 +392,12 @@ namespace MofTestProjDotNetCore
             Console.WriteLine("TestNamedElement (" + e.Name + ")");
             Console.WriteLine();
 
-            TestList(e.AllNamespaces(), TstConstants.NamedElement_AllNamespaces);
-            TestList(e.AllOwningPackages(), TstConstants.NamedElement_AllOwningPackages);
-            TestList(e.ClientDependency, TstConstants.NamedElement_ClientDependency);
-            Assert.AreEqual(e.QualifiedName, TstConstants.NamedElement_QualifiedName);
-            Assert.AreEqual(e.IsDistinguishableFrom(e, e.Namespace), TstConstants.NamedElement_IsDistinguishableFrom);
-            Assert.AreEqual(e.Separator(), TstConstants.NamedElement_Separator);
+            TestList(e.AllNamespaces(), TestConstants.NamedElement_AllNamespaces);
+            TestList(e.AllOwningPackages(), TestConstants.NamedElement_AllOwningPackages);
+            TestList(e.ClientDependency, TestConstants.NamedElement_ClientDependency);
+            Assert.AreEqual(e.QualifiedName, TestConstants.NamedElement_QualifiedName);
+            Assert.AreEqual(e.IsDistinguishableFrom(e, e.Namespace), TestConstants.NamedElement_IsDistinguishableFrom);
+            Assert.AreEqual(e.Separator(), TestConstants.NamedElement_Separator);
         }
         [TestMethod]
         public void TestNamespace()
@@ -411,11 +411,11 @@ namespace MofTestProjDotNetCore
             Console.WriteLine("TestNamespace (" + ns.Name + ")");
             Console.WriteLine();
 
-            TestList(ns.ImportedMember.ToList(), TstConstants.Namespace_ImportedMember);
-            TestList(ns.ExcludeCollisions(list), TstConstants.Namespace_ExcludeCollisions);
-            TestList(ns.GetNamesOfMember(c), TstConstants.Namespace_GetNamesOfMember);
-            TestList(ns.ImportMembers(list), TstConstants.Namespace_ImportMembers);
-            Assert.AreEqual(ns.MembersAreDistinguishable(), TstConstants.Namespace_MembersAreDistinguishable);
+            TestList(ns.ImportedMember.ToList(), TestConstants.Namespace_ImportedMember);
+            TestList(ns.ExcludeCollisions(list), TestConstants.Namespace_ExcludeCollisions);
+            TestList(ns.GetNamesOfMember(c), TestConstants.Namespace_GetNamesOfMember);
+            TestList(ns.ImportMembers(list), TestConstants.Namespace_ImportMembers);
+            Assert.AreEqual(ns.MembersAreDistinguishable(), TestConstants.Namespace_MembersAreDistinguishable);
         }
         [TestMethod]
         public void TestOpaqueExpression()
@@ -426,11 +426,11 @@ namespace MofTestProjDotNetCore
             Console.WriteLine("TestOpaqueExpression (" + ee.Name + ")");
             Console.WriteLine();
 
-            Assert.AreEqual(ee.Result.Name, TstConstants.OpaqueExpression_Result);
-            Assert.AreEqual(ee.IsIntegral(), TstConstants.OpaqueExpression_IsIntegral);
-            Assert.AreEqual(ee.IsNonNegative(), TstConstants.OpaqueExpression_IsNonNegative);
-            Assert.AreEqual(ee.IsPositive(), TstConstants.OpaqueExpression_IsPositive);
-            Assert.AreEqual(ee.Value(), TstConstants.OpaqueExpression_Value);
+            Assert.AreEqual(ee.Result.Name, TestConstants.OpaqueExpression_Result);
+            Assert.AreEqual(ee.IsIntegral(), TestConstants.OpaqueExpression_IsIntegral);
+            Assert.AreEqual(ee.IsNonNegative(), TestConstants.OpaqueExpression_IsNonNegative);
+            Assert.AreEqual(ee.IsPositive(), TestConstants.OpaqueExpression_IsPositive);
+            Assert.AreEqual(ee.Value(), TestConstants.OpaqueExpression_Value);
         }
         [TestMethod]
         public void TestOperation()
@@ -442,13 +442,13 @@ namespace MofTestProjDotNetCore
             Console.WriteLine("TestOperation (" + e.Name + ")");
             Console.WriteLine();
 
-            Assert.AreEqual(e.IsOrdered, TstConstants.Operation_IsOrdered);
-            Assert.AreEqual(e.IsUnique, TstConstants.Operation_IsUnique);
-            Assert.AreEqual(e.Lower, TstConstants.Operation_Lower);
-            Assert.AreEqual(e.Type.Name, TstConstants.Operation_Type);
-            Assert.AreEqual(e.Upper, TstConstants.Operation_Upper);
-            Assert.AreEqual(e.IsConsistentWith(red), TstConstants.Operation_IsConsistentWith);
-            TestList(e.ReturnResult(), TstConstants.Operation_ReturnResult);
+            Assert.AreEqual(e.IsOrdered, TestConstants.Operation_IsOrdered);
+            Assert.AreEqual(e.IsUnique, TestConstants.Operation_IsUnique);
+            Assert.AreEqual(e.Lower, TestConstants.Operation_Lower);
+            Assert.AreEqual(e.Type.Name, TestConstants.Operation_Type);
+            Assert.AreEqual(e.Upper, TestConstants.Operation_Upper);
+            Assert.AreEqual(e.IsConsistentWith(red), TestConstants.Operation_IsConsistentWith);
+            TestList(e.ReturnResult(), TestConstants.Operation_ReturnResult);
         }
         [TestMethod]
         public void TestPackage()
@@ -460,14 +460,14 @@ namespace MofTestProjDotNetCore
             Console.WriteLine("TestPackage (" + e.Name + ")");
             Console.WriteLine();
 
-            TestList(e.AllApplicableStereotypes(), TstConstants.Package_AllApplicableStereotypes);
-            TestList(e.NestedPackage, TstConstants.Package_NestedPackage);
-            TestList(e.OwnedStereotype, TstConstants.Package_OwnedStereotype);
-            TestList(e.OwnedType, TstConstants.Package_OwnedType);
-            Assert.AreEqual(e.ContainingProfile().Name, TstConstants.Package_ContainingProfile);
-            Assert.AreEqual(e.MakesVisible(ne), TstConstants.Package_MakesVisible);
-            Assert.AreEqual(e.MustBeOwned(), TstConstants.Package_MustBeOwned);
-            Assert.AreEqual(e.VisibleMembers().Count, TstConstants.Package_VisibleMembers_Count);
+            TestList(e.AllApplicableStereotypes(), TestConstants.Package_AllApplicableStereotypes);
+            TestList(e.NestedPackage, TestConstants.Package_NestedPackage);
+            TestList(e.OwnedStereotype, TestConstants.Package_OwnedStereotype);
+            TestList(e.OwnedType, TestConstants.Package_OwnedType);
+            Assert.AreEqual(e.ContainingProfile().Name, TestConstants.Package_ContainingProfile);
+            Assert.AreEqual(e.MakesVisible(ne), TestConstants.Package_MakesVisible);
+            Assert.AreEqual(e.MustBeOwned(), TestConstants.Package_MustBeOwned);
+            Assert.AreEqual(e.VisibleMembers().Count, TestConstants.Package_VisibleMembers_Count);
         }
         [TestMethod]
         public void TestParameterableElement()
@@ -479,8 +479,8 @@ namespace MofTestProjDotNetCore
             Console.WriteLine("TestParameterableElement (" + (e as NamedElementBuilder).Name + ")");
             Console.WriteLine();
 
-            Assert.AreEqual(e.IsCompatibleWith(testPe), TstConstants.ParameterableElement_IsCompatibleWith);
-            Assert.AreEqual(e.IsTemplateParameter(), TstConstants.ParameterableElement_IsTemplateParameter);
+            Assert.AreEqual(e.IsCompatibleWith(testPe), TestConstants.ParameterableElement_IsCompatibleWith);
+            Assert.AreEqual(e.IsTemplateParameter(), TestConstants.ParameterableElement_IsTemplateParameter);
         }
         [TestMethod]
         public void TestParameter()
@@ -491,7 +491,7 @@ namespace MofTestProjDotNetCore
             Console.WriteLine("TestParameter (" + e.Name + ")");
             Console.WriteLine();
 
-            Assert.AreEqual(e.Default, TstConstants.Parameter_Default);
+            Assert.AreEqual(e.Default, TestConstants.Parameter_Default);
         }
         [TestMethod]
         public void TestPort()
@@ -502,10 +502,10 @@ namespace MofTestProjDotNetCore
             Console.WriteLine("TestPort (" + (e as NamedElementBuilder).Name + ")");
             Console.WriteLine();
 
-            TestList(e.BasicProvided(), TstConstants.Port_BasicProvided);
-            //TestList(e.BasicRequired(), TstConstants.Port_BasicRequired);  // UsageBuilder missing
-            TestList(e.Provided, TstConstants.Port_Provided);
-            TestList(e.Required, TstConstants.Port_Required);
+            TestList(e.BasicProvided(), TestConstants.Port_BasicProvided);
+            //TestList(e.BasicRequired(), TestConstants.Port_BasicRequired);  // UsageBuilder missing
+            TestList(e.Provided, TestConstants.Port_Provided);
+            TestList(e.Required, TestConstants.Port_Required);
         }
         [TestMethod]
         public void TestProperty()
@@ -518,13 +518,13 @@ namespace MofTestProjDotNetCore
             Console.WriteLine("TestProperty (" + (e as NamedElementBuilder).Name + ")");
             Console.WriteLine();
 
-            Assert.AreEqual(e.IsComposite, TstConstants.Property_IsComposite);
-            Assert.AreEqual(e.Opposite.Name, TstConstants.Property_Opposite);
-            Assert.AreEqual(e.IsAttribute(), TstConstants.Property_IsAttribute);
-            Assert.AreEqual(e.IsCompatibleWith(peb), TstConstants.Property_IsCompatibleWith);
-            Assert.AreEqual(e.IsConsistentWith(reb), TstConstants.Property_IsConsistentWith);
-            Assert.AreEqual(e.IsNavigable(), TstConstants.Property_IsNavigable);
-            TestList(e.SubsettingContext(), TstConstants.Property_SubsettingContext);
+            Assert.AreEqual(e.IsComposite, TestConstants.Property_IsComposite);
+            Assert.AreEqual(e.Opposite.Name, TestConstants.Property_Opposite);
+            Assert.AreEqual(e.IsAttribute(), TestConstants.Property_IsAttribute);
+            Assert.AreEqual(e.IsCompatibleWith(peb), TestConstants.Property_IsCompatibleWith);
+            Assert.AreEqual(e.IsConsistentWith(reb), TestConstants.Property_IsConsistentWith);
+            Assert.AreEqual(e.IsNavigable(), TestConstants.Property_IsNavigable);
+            TestList(e.SubsettingContext(), TestConstants.Property_SubsettingContext);
         }
         [TestMethod]
         public void TestPseudostate()
@@ -536,7 +536,7 @@ namespace MofTestProjDotNetCore
             Console.WriteLine("TestPseudostate (" + (e as NamedElementBuilder).Name + ")");
             Console.WriteLine();
 
-            Assert.AreEqual(e.IsConsistentWith(reb), TstConstants.Pseudostate_IsConsistentWith);
+            Assert.AreEqual(e.IsConsistentWith(reb), TestConstants.Pseudostate_IsConsistentWith);
         }
         [TestMethod]
         public void TestRedefinableElement()
@@ -548,7 +548,7 @@ namespace MofTestProjDotNetCore
             Console.WriteLine("TestRedefinableElement (" + (e as NamedElementBuilder).Name + ")");
             Console.WriteLine();
 
-            Assert.AreEqual(e.IsRedefinitionContextValid(reb), TstConstants.RedefinableElement_IsRedefinitionContextValid);
+            Assert.AreEqual(e.IsRedefinitionContextValid(reb), TestConstants.RedefinableElement_IsRedefinitionContextValid);
         }
         [TestMethod]
         public void TestRegion()
@@ -560,11 +560,11 @@ namespace MofTestProjDotNetCore
             Console.WriteLine("TestRegion (" + (e as NamedElementBuilder).Name + ")");
             Console.WriteLine();
 
-            Assert.AreEqual(e.BelongsToPSM(), TstConstants.Region_BelongsToPSM);
-            Assert.AreEqual(e.RedefinitionContext.Name, TstConstants.Region_RedefinitionContext);
-            Assert.AreEqual(e.ContainingStateMachine().Name, TstConstants.Region_ContainingStateMachine);
-            Assert.AreEqual(e.IsConsistentWith(reb), TstConstants.Region_IsConsistentWith);
-            Assert.AreEqual(e.IsRedefinitionContextValid(reb), TstConstants.Region_IsRedefinitionContextValid);
+            Assert.AreEqual(e.BelongsToPSM(), TestConstants.Region_BelongsToPSM);
+            Assert.AreEqual(e.RedefinitionContext.Name, TestConstants.Region_RedefinitionContext);
+            Assert.AreEqual(e.ContainingStateMachine().Name, TestConstants.Region_ContainingStateMachine);
+            Assert.AreEqual(e.IsConsistentWith(reb), TestConstants.Region_IsConsistentWith);
+            Assert.AreEqual(e.IsRedefinitionContextValid(reb), TestConstants.Region_IsRedefinitionContextValid);
         }
         [TestMethod]
         public void TestStateMachine()
@@ -578,11 +578,11 @@ namespace MofTestProjDotNetCore
             Console.WriteLine("TestStateMachine (" + (e as NamedElementBuilder).Name + ")");
             Console.WriteLine();
 
-            Assert.AreEqual(e.Ancestor(v1, v2), TstConstants.StateMachine_Ancestor);
-            Assert.AreEqual(e.IsConsistentWith(red), TstConstants.StateMachine_IsConsistentWith);
-            Assert.AreEqual(e.IsRedefinitionContextValid(red), TstConstants.StateMachine_IsRedefinitionContextValid);
-            Assert.AreEqual(e.LCA(v1, v2).Name, TstConstants.StateMachine_LCA);
-            Assert.AreEqual(e.LCAState(v1, v2).Name, TstConstants.StateMachine_LCAState);
+            Assert.AreEqual(e.Ancestor(v1, v2), TestConstants.StateMachine_Ancestor);
+            Assert.AreEqual(e.IsConsistentWith(red), TestConstants.StateMachine_IsConsistentWith);
+            Assert.AreEqual(e.IsRedefinitionContextValid(red), TestConstants.StateMachine_IsRedefinitionContextValid);
+            Assert.AreEqual(e.LCA(v1, v2).Name, TestConstants.StateMachine_LCA);
+            Assert.AreEqual(e.LCAState(v1, v2).Name, TestConstants.StateMachine_LCAState);
         }
         [TestMethod]
         public void TestState()
@@ -594,12 +594,12 @@ namespace MofTestProjDotNetCore
             Console.WriteLine("TestState (" + (e as NamedElementBuilder).Name + ")");
             Console.WriteLine();
 
-            Assert.AreEqual(e.IsComposite, TstConstants.State_IsComposite);
-            Assert.AreEqual(e.IsOrthogonal, TstConstants.State_IsOrthogonal);
-            Assert.AreEqual(e.IsSimple, TstConstants.State_IsSimple);
-            Assert.AreEqual(e.IsSubmachineState, TstConstants.State_IsSubmachineState);
-            Assert.AreEqual(e.ContainingStateMachine().Name, TstConstants.State_ContainingStateMachine);
-            Assert.AreEqual(e.IsConsistentWith(red), TstConstants.State_IsConsistentWith);
+            Assert.AreEqual(e.IsComposite, TestConstants.State_IsComposite);
+            Assert.AreEqual(e.IsOrthogonal, TestConstants.State_IsOrthogonal);
+            Assert.AreEqual(e.IsSimple, TestConstants.State_IsSimple);
+            Assert.AreEqual(e.IsSubmachineState, TestConstants.State_IsSubmachineState);
+            Assert.AreEqual(e.ContainingStateMachine().Name, TestConstants.State_ContainingStateMachine);
+            Assert.AreEqual(e.IsConsistentWith(red), TestConstants.State_IsConsistentWith);
         }
         [TestMethod]
         public void TestStereotype()
@@ -610,8 +610,8 @@ namespace MofTestProjDotNetCore
             Console.WriteLine("TestStereotype (" + (e as NamedElementBuilder).Name + ")");
             Console.WriteLine();
 
-            Assert.AreEqual(e.Profile.Name, TstConstants.Stereotype_Profile);
-            Assert.AreEqual(e.ContainingProfile().Name, TstConstants.Stereotype_ContainingProfile);
+            Assert.AreEqual(e.Profile.Name, TestConstants.Stereotype_Profile);
+            Assert.AreEqual(e.ContainingProfile().Name, TestConstants.Stereotype_ContainingProfile);
         }
         [TestMethod]
         public void TestStringExpression()
@@ -622,7 +622,7 @@ namespace MofTestProjDotNetCore
             Console.WriteLine("TestStringExpression (" + (e as NamedElementBuilder).Name + ")");
             Console.WriteLine();
 
-            Assert.AreEqual(e.StringValue(), TstConstants.StringExpression_StringValue);
+            Assert.AreEqual(e.StringValue(), TestConstants.StringExpression_StringValue);
         }
         [TestMethod]
         public void TestStructuredClassifier()
@@ -633,8 +633,8 @@ namespace MofTestProjDotNetCore
             Console.WriteLine("TestStructuredClassifier (" + (e as NamedElementBuilder).Name + ")");
             Console.WriteLine();
 
-            TestList(e.AllRoles(), TstConstants.StructuredClassifier_AllRoles);
-            TestList(e.Part, TstConstants.StructuredClassifier_Part);
+            TestList(e.AllRoles(), TestConstants.StructuredClassifier_AllRoles);
+            TestList(e.Part, TestConstants.StructuredClassifier_Part);
         }
         [TestMethod]
         public void TestTemplateableElement()
@@ -645,8 +645,8 @@ namespace MofTestProjDotNetCore
             Console.WriteLine("TestTemplateableElement (" + (e as NamedElementBuilder).Name + ")");
             Console.WriteLine();
 
-            Assert.AreEqual(e.IsTemplate(), TstConstants.TemplateableElement_IsTemplate);
-            Assert.AreEqual(e.ParameterableElements().Count, TstConstants.TemplateableElement_ParameterableElements_Count);
+            Assert.AreEqual(e.IsTemplate(), TestConstants.TemplateableElement_IsTemplate);
+            Assert.AreEqual(e.ParameterableElements().Count, TestConstants.TemplateableElement_ParameterableElements_Count);
         }
         [TestMethod]
         public void TestTransition()
@@ -658,9 +658,9 @@ namespace MofTestProjDotNetCore
             Console.WriteLine("TestTransition (" + (e as NamedElementBuilder).Name + ")");
             Console.WriteLine();
 
-            Assert.AreEqual(e.RedefinitionContext.Name, TstConstants.Transition_RedefinitionContext);
-            Assert.AreEqual(e.ContainingStateMachine().Name, TstConstants.Transition_ContainingStateMachine);
-            Assert.AreEqual(e.IsConsistentWith(red), TstConstants.Transition_IsConsistentWith);
+            Assert.AreEqual(e.RedefinitionContext.Name, TestConstants.Transition_RedefinitionContext);
+            Assert.AreEqual(e.ContainingStateMachine().Name, TestConstants.Transition_ContainingStateMachine);
+            Assert.AreEqual(e.IsConsistentWith(red), TestConstants.Transition_IsConsistentWith);
         }
         [TestMethod]
         public void TestType()
@@ -672,7 +672,7 @@ namespace MofTestProjDotNetCore
             Console.WriteLine("TestType (" + (e as NamedElementBuilder).Name + ")");
             Console.WriteLine();
 
-            Assert.AreEqual(e.ConformsTo(t), TstConstants.Type_ConformsTo);
+            Assert.AreEqual(e.ConformsTo(t), TestConstants.Type_ConformsTo);
         }
         [TestMethod]
         public void TestUseCase()
@@ -683,7 +683,7 @@ namespace MofTestProjDotNetCore
             Console.WriteLine("TestUseCase (" + e.Name + ")");
             Console.WriteLine();
 
-            TestList(e.AllIncludedUseCases(), TstConstants.UseCase_AllIncludedUseCases);
+            TestList(e.AllIncludedUseCases(), TestConstants.UseCase_AllIncludedUseCases);
         }
         [TestMethod]
         public void TestValueSpecification()
@@ -694,14 +694,14 @@ namespace MofTestProjDotNetCore
             Console.WriteLine("TestValueSpecification (" + e.Name + ")");
             Console.WriteLine();
 
-            Assert.AreEqual(e.BooleanValue(), TstConstants.ValueSpecification_BooleanValue);
-            Assert.AreEqual(e.IntegerValue(), TstConstants.ValueSpecification_IntegerValue);
-            Assert.AreEqual(e.IsCompatibleWith(e), TstConstants.ValueSpecification_IsCompatibleWith);
-            Assert.AreEqual(e.IsComputable(), TstConstants.ValueSpecification_IsComputable);
-            Assert.AreEqual(e.IsNull(), TstConstants.ValueSpecification_IsNull);
-            Assert.AreEqual(e.RealValue(), TstConstants.ValueSpecification_RealValue);
-            Assert.AreEqual(e.StringValue(), TstConstants.ValueSpecification_StringValue);
-            Assert.AreEqual(e.UnlimitedValue(), TstConstants.ValueSpecification_UnlimitedValue);
+            Assert.AreEqual(e.BooleanValue(), TestConstants.ValueSpecification_BooleanValue);
+            Assert.AreEqual(e.IntegerValue(), TestConstants.ValueSpecification_IntegerValue);
+            Assert.AreEqual(e.IsCompatibleWith(e), TestConstants.ValueSpecification_IsCompatibleWith);
+            Assert.AreEqual(e.IsComputable(), TestConstants.ValueSpecification_IsComputable);
+            Assert.AreEqual(e.IsNull(), TestConstants.ValueSpecification_IsNull);
+            Assert.AreEqual(e.RealValue(), TestConstants.ValueSpecification_RealValue);
+            Assert.AreEqual(e.StringValue(), TestConstants.ValueSpecification_StringValue);
+            Assert.AreEqual(e.UnlimitedValue(), TestConstants.ValueSpecification_UnlimitedValue);
         }
 
         [TestMethod]
@@ -716,13 +716,13 @@ namespace MofTestProjDotNetCore
             Console.WriteLine("TestVertex (" + e.Name + ")");
             Console.WriteLine();
 
-            TestList(e.Incoming, TstConstants.Vertex_Incoming);
-            TestList(e.Outgoing, TstConstants.Vertex_Outgoing);
-            Assert.AreEqual(e.RedefinitionContext.Name, TstConstants.Vertex_RedefinitionContext);
-            Assert.AreEqual(e.ContainingStateMachine().Name, TstConstants.Vertex_ContainingStateMachine);
-            Assert.AreEqual(e.IsConsistentWith(red), TstConstants.Vertex_IsConsistentWith);
-            Assert.AreEqual(e.IsContainedInRegion(r), TstConstants.Vertex_IsContainedInRegion);
-            Assert.AreEqual(e.IsContainedInState(s), TstConstants.Vertex_IsContainedInState);
+            TestList(e.Incoming, TestConstants.Vertex_Incoming);
+            TestList(e.Outgoing, TestConstants.Vertex_Outgoing);
+            Assert.AreEqual(e.RedefinitionContext.Name, TestConstants.Vertex_RedefinitionContext);
+            Assert.AreEqual(e.ContainingStateMachine().Name, TestConstants.Vertex_ContainingStateMachine);
+            Assert.AreEqual(e.IsConsistentWith(red), TestConstants.Vertex_IsConsistentWith);
+            Assert.AreEqual(e.IsContainedInRegion(r), TestConstants.Vertex_IsContainedInRegion);
+            Assert.AreEqual(e.IsContainedInState(s), TestConstants.Vertex_IsContainedInState);
         }
 
         public void TestList(IReadOnlyCollection<NamedElementBuilder> list, string[] testList)

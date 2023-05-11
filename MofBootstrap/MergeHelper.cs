@@ -133,8 +133,10 @@ namespace MofBootstrap
         }
 
 
-        public static AssociationBuilder CloneAssociation(AssociationBuilder ab, MofFactory mofFactory)
+        public static AssociationBuilder CloneAssociation(AssociationBuilder ab, PackageBuilder receivingPackage, MofFactory mofFactory)
         {
+
+            Console.WriteLine("\t" + ab.Name + " member end count: " + ab.MemberEnd.Count);
             AssociationBuilder newAssoc = mofFactory.Association();
 
             newAssoc.Name = ab.Name;
@@ -142,49 +144,106 @@ namespace MofBootstrap
             newAssoc.IsDerived = ab.IsDerived;
             newAssoc.IsAbstract = ab.IsAbstract;
 
-            foreach(var ownedEnd in ab.OwnedEnd)
+            if (ab.OwnedEnd.Count == 0)
             {
-                PropertyBuilder newOwnedEnd = mofFactory.Property();
-                newOwnedEnd.Name = ownedEnd.Name;
-                newOwnedEnd.Type = ownedEnd.Type;
+                ClassBuilder classMemeberEnd0 = receivingPackage.PackagedElement.OfType<ClassBuilder>()
+                    .FirstOrDefault(c => c.Name == ab.MemberEnd[0].Class.Name);
 
+                ClassBuilder classMemeberEnd1 = receivingPackage.PackagedElement.OfType<ClassBuilder>()
+                    .FirstOrDefault(c => c.Name == ab.MemberEnd[1].Class.Name);
 
-                if(ownedEnd.LowerValue is LiteralIntegerBuilder oelv)
+                if (classMemeberEnd0 != null && classMemeberEnd1 != null)
                 {
-                    LiteralIntegerBuilder newValue = mofFactory.LiteralInteger();
-                    newValue.Value = oelv.Value;
-                    newValue.Name = oelv.Name;
-                    newOwnedEnd.LowerValue = newValue;
+                    PropertyBuilder memberEnd0 = classMemeberEnd0.OwnedAttribute.FirstOrDefault(m => m.Name == ab.MemberEnd[0].Name);
+                    PropertyBuilder memberEnd1 = classMemeberEnd1.OwnedAttribute.FirstOrDefault(m => m.Name == ab.MemberEnd[1].Name);
+                    newAssoc.MemberEnd.Add(memberEnd0);
+                    newAssoc.MemberEnd.Add(memberEnd1);
+                    Console.WriteLine("Added association: " + ab.Name);
                 }
-                else
-                {
-                    if(ownedEnd.LowerValue != (null)) Console.WriteLine("                      Associacion.OwnedEnd.LowerValue is " + ownedEnd.LowerValue.MMetaClass);
-                }
-
-                if (ownedEnd.UpperValue is LiteralUnlimitedNaturalBuilder oeuv)
-                {
-                    LiteralUnlimitedNaturalBuilder newValue = mofFactory.LiteralUnlimitedNatural();
-                    newValue.Value = oeuv.Value;
-                    newValue.Name = oeuv.Name;
-                    newOwnedEnd.UpperValue = newValue;
-                }
-                else
-                {
-                    if (ownedEnd.UpperValue != (null)) Console.WriteLine("                      Associacion.OwnedEnd.LowerValue is " + ownedEnd.UpperValue.MMetaClass);
-                }
-                newAssoc.OwnedEnd.Add(newOwnedEnd);
             }
+            else
+            {
+                foreach(var oe in ab.OwnedEnd)
+                {
+                    Console.WriteLine("\townedEnd.Name: " + oe.Name);
+                    Console.WriteLine("\townedEnd.Class.Name: " + oe.Class?.Name);
+                    Console.WriteLine("\townedEnd.Type.Name: " + oe.Type.Name);
+                    Console.WriteLine("\townedEnd.MType.Name: " + oe.MType.MName);
+                }
+                Console.WriteLine("\t\t\t" + "memberEnd[0].Type.Name: " + ab.MemberEnd[0].Type.Name);
+                Console.WriteLine("\t\t\t" + "memberEnd[1].Type.Name: " + ab.MemberEnd[1].Type.Name);
+                ClassBuilder classMemberEnd0 = receivingPackage.PackagedElement.OfType<ClassBuilder>()
+                    .FirstOrDefault(c => c.Name == ab.MemberEnd[0].Type.Name);
 
-            //foreach (var memberEnd in ab.MemberEnd)
-            //{
-            //    PropertyBuilder newMemberEnd = mofFactory.Property();
-            //    newMemberEnd.Name = memberEnd.Name;
-            //    newMemberEnd.Type = memberEnd.Type;
-            //    if (newAssoc.MemberEnd.Where(me => me.Name == newMemberEnd.Name).FirstOrDefault() == null)
-            //    {
-            //        newAssoc.MemberEnd.Add(newMemberEnd);
-            //    }
-            //}
+                ClassBuilder classMemberEnd1 = receivingPackage.PackagedElement.OfType<ClassBuilder>()
+                    .FirstOrDefault(c => c.Name == ab.MemberEnd[1].Type.Name);
+
+                Console.WriteLine("\t\t\t" + "classMemberEnd0 " + classMemberEnd0.Name);
+                Console.WriteLine("\t\t\t" + "classMemberEnd1 " + classMemberEnd1.Name);
+
+                if (classMemberEnd0 != null && classMemberEnd1 != null)
+                {
+                    PropertyBuilder memberEnd0 = classMemberEnd1.OwnedAttribute.FirstOrDefault(m => m.Name == ab.MemberEnd[0].Name);
+                    PropertyBuilder memberEnd1 = classMemberEnd0.OwnedAttribute.FirstOrDefault(m => m.Name == ab.MemberEnd[1].Name);
+
+                    Console.WriteLine("Needed attributes:");
+                    Console.WriteLine(ab.MemberEnd[0].Name);
+                    Console.WriteLine(ab.MemberEnd[1].Name);
+                    Console.WriteLine("Attributes in " + classMemberEnd0.Name);
+                    foreach(var at in classMemberEnd0.OwnedAttribute)
+                    {
+                        Console.WriteLine("\t" + at.Name);
+                    }
+                    Console.WriteLine("Attributes in " + classMemberEnd1.Name);
+                    foreach (var at in classMemberEnd1.OwnedAttribute)
+                    {
+                        Console.WriteLine("\t" + at.Name);
+                    }
+                    Console.WriteLine(memberEnd0?.Name + " and " + memberEnd1?.Name);
+
+                    //if (memberEnd0 == null)
+                    //    memberEnd0 = receivingPackage.PackagedElement.OfType<PropertyBuilder>().FirstOrDefault(p => p.Name == ab.MemberEnd[0].Name);
+                    //if (memberEnd1 == null)
+                    //    memberEnd1 = receivingPackage.PackagedElement.OfType<PropertyBuilder>().FirstOrDefault(p => p.Name == ab.MemberEnd[1].Name);
+                    if (memberEnd0 != null)
+                    {
+                        //newAssoc.MemberEnd.Add(memberEnd1InMof);
+                        //Console.WriteLine(memberEnd0InMof.Type.Name);
+                        //Console.WriteLine(memberEnd1InMof.Type.Name);
+                        try
+                        {
+                            PropertyBuilder ownedEnd0Clone = CloneAttribute(ab.OwnedEnd[0], mofFactory);
+                            newAssoc.OwnedEnd.Add(ownedEnd0Clone);
+                        }
+                        catch (Exception ex)
+                        {
+                            Console.WriteLine(ex.Message);
+                        }
+
+                        newAssoc.MemberEnd.Add(memberEnd0);
+                        Console.WriteLine("Added optional association: " + ab.Name);
+                    }
+                    else if (memberEnd1 != null)
+                    {
+                        //newAssoc.MemberEnd.Add(memberEnd1InMof);
+                        //Console.WriteLine(memberEnd0InMof.Type.Name);
+                        //Console.WriteLine(memberEnd1InMof.Type.Name);
+                        try
+                        {
+                            PropertyBuilder ownedEnd0Clone = CloneAttribute(ab.OwnedEnd[0], mofFactory);
+                            newAssoc.OwnedEnd.Add(ownedEnd0Clone);
+                        }
+                        catch (Exception ex)
+                        {
+                            Console.WriteLine(ex.Message);
+                        }
+
+                        newAssoc.MemberEnd.Add(memberEnd1);
+                        Console.WriteLine("Added optional association: " + ab.Name);
+                    }
+                }
+
+            }
 
             return newAssoc;
         }
@@ -349,7 +408,7 @@ namespace MofBootstrap
 
                 //AssociationBuilder myAssoc = mofModel.Objects.OfType<AssociationBuilder>().First(assb => assb.Name == assoc.Name);
 
-                //newAttr.Association.Add(myAssoc);
+                //newAttr.Association.Add(newAssoc);
             }
 
             foreach (var redProp in attr.RedefinedProperty)
@@ -446,7 +505,7 @@ namespace MofBootstrap
             {
                 if (receiver.OwnedOperation.Where(o => o.Name == op.Name).FirstOrDefault() != null)
                 {
-                    Console.WriteLine("             Operation '" + receiver.Name + "." + op.Name +"' already contained!!!");
+                    //Console.WriteLine("             Operation '" + receiver.Name + "." + op.Name +"' already contained!!!");
                     // check if parameters are the same
                     // needs to be implemented
                 }
@@ -461,7 +520,7 @@ namespace MofBootstrap
             {
                 if(receiver.OwnedAttribute.Where(a => a.Name == attr.Name).FirstOrDefault() != null)
                 {
-                    Console.WriteLine("             Attribute '" + receiver.Name + "." + attr.Name + "' already contained!!!");
+                    //Console.WriteLine("             Attribute '" + receiver.Name + "." + attr.Name + "' already contained!!!");
                     // needs to be implemented
                 }
                 else
@@ -477,7 +536,7 @@ namespace MofBootstrap
             {
                 if (receiver.Generalization.Where(pe => pe.General.Name == inheritance.General.Name).FirstOrDefault() != null)
                 {
-                    Console.WriteLine("             General '" + receiver.Name + "." + inheritance.General + "' already contained!!!");
+                    //Console.WriteLine("             General '" + receiver.Name + "." + inheritance.General + "' already contained!!!");
                     // nothing to do
                 }
                 else
@@ -505,42 +564,6 @@ namespace MofBootstrap
             Console.WriteLine("Merging " + donor + " into " + receiver + "...");
             Console.WriteLine();
 
-            // copying associations first
-
-            foreach (var element in donor.PackagedElement)
-            {
-                //Console.WriteLine("  " + element.Name);
-
-                if (element is PackageBuilder epb)
-                {
-                    // ignore
-                }
-                else if (element is ClassBuilder ecb)
-                {
-                    // ignore
-                }
-                else if (element is EnumerationBuilder enumb)
-                {
-                    // ignore
-                }
-                else if (element is AssociationBuilder ab)
-                {
-                    if (receiver.PackagedElement.Where(pe => pe.Name == ab.Name).FirstOrDefault() != null)
-                    {
-                        Console.WriteLine("      ### Package already contains assoc: " + ab.Name);
-                        //Console.WriteLine("      Association merge needs to be implemented!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
-                    }
-                    else
-                    {
-                        receiver.PackagedElement.Add(CloneAssociation(ab, mofFactory));
-                    }
-                }
-                else
-                {
-                    Console.WriteLine("      element " + element + " was ignored.");
-                }
-            }
-
             foreach (var element in donor.PackagedElement)
             {
                 //Console.WriteLine("  " + element.Name);
@@ -554,7 +577,7 @@ namespace MofBootstrap
                         {
                             if (receiver.PackagedElement.Where(pe => pe.Name == ecb.Name).FirstOrDefault() != null)
                             {
-                                Console.WriteLine("      ### Package already contains class: " + ecb.Name);
+                                //Console.WriteLine("      ### Package already contains class: " + ecb.Name);
                                 // there is already a class with the same name in the package, so they have to be merged
                                 ClassBuilder recClass = receiver.PackagedElement.OfType<ClassBuilder>().First(pe => pe.Name == ecb.Name);
                                 receiver.PackagedElement.Add(MergeClasses(recClass, ecb, mofFactory));
@@ -589,7 +612,7 @@ namespace MofBootstrap
                 {
                     if (receiver.PackagedElement.Where(pe => pe.Name == ecb.Name).FirstOrDefault() != null)
                     {
-                        Console.WriteLine("      ### Package already contains class: " + ecb.Name);
+                        //Console.WriteLine("      ### Package already contains class: " + ecb.Name);
                         // there is already a class with the same name in the package, so they have to be merged
                         ClassBuilder recClass = receiver.PackagedElement.OfType<ClassBuilder>().First(pe => pe.Name == ecb.Name);
                         receiver.PackagedElement.Add(MergeClasses(recClass, ecb, mofFactory));
@@ -605,7 +628,7 @@ namespace MofBootstrap
                 {
                     if (receiver.PackagedElement.Where(pe => pe.Name == enumb.Name).FirstOrDefault() != null)
                     {
-                        Console.WriteLine("      ### Package already contains enum: " + enumb.Name);
+                        //Console.WriteLine("      ### Package already contains enum: " + enumb.Name);
                         // there is already an enumeration with the same name in the package, so they have to be merged
                         //Console.WriteLine("      Enumeration merge needs to be implemented!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
                     }
@@ -615,22 +638,44 @@ namespace MofBootstrap
                         receiver.PackagedElement.Add(newEnum);
                     }
                 }
-                else if(element is AssociationBuilder ab)
+                //else if(element is AssociationBuilder ab)
+                //{
+                //    if (receiver.PackagedElement.Where(pe => pe.Name == ab.Name).FirstOrDefault() != null)
+                //    {
+                //        Console.WriteLine("      ### Package already contains assoc: " + ab.Name);
+                //        // there is already an association with the same name in the package, so they have to be merged
+                //        //Console.WriteLine("      Association merge needs to be implemented!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+                //    }
+                //    else
+                //    {
+                //        receiver.PackagedElement.Add(CloneAssociation(ab, mofFactory));
+                //    }
+                //}
+                //else
+                //{
+                //    Console.WriteLine("      element " + element + " was ignored.");
+                //}
+            }
+
+            // copying associations last because merged classes are needed
+
+            foreach (var element in donor.PackagedElement)
+            {
+
+                if (element is AssociationBuilder ab)
                 {
-                    if (receiver.PackagedElement.Where(pe => pe.Name == ab.Name).FirstOrDefault() != null)
+                    Console.WriteLine("Cloning association " + element.Name);
+                    if (receiver.PackagedElement.Where(pe => pe.Name == ab.Name).FirstOrDefault() == null)
                     {
-                        Console.WriteLine("      ### Package already contains assoc: " + ab.Name);
-                        // there is already an association with the same name in the package, so they have to be merged
-                        //Console.WriteLine("      Association merge needs to be implemented!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+                        var ass = CloneAssociation(ab, receiver, mofFactory);
+                        if (ass.MemberEnd.Count == 0) Console.WriteLine("empty member end: " + ass.Name);
+                        receiver.PackagedElement.Add(ass);
                     }
                     else
                     {
-                        receiver.PackagedElement.Add(CloneAssociation(ab, mofFactory));
+                        Console.WriteLine("      ### Package already contains assoc: " + ab.Name);
+                        //Console.WriteLine("      Association merge needs to be implemented!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
                     }
-                }
-                else
-                {
-                    Console.WriteLine("      element " + element + " was ignored.");
                 }
             }
 
@@ -644,53 +689,75 @@ namespace MofBootstrap
         /// <param name="umlModel"></param>
         /// <param name="mergePckgs"></param>
         /// <param name="cmof"></param>
-        public static void AssociationMatching(MutableModel umlModel, PackageMergeBuilder mergePckgs, PackageBuilder cmof)
+        public static void AssociationMatching(MutableModel umlModel, PackageBuilder mof, MofFactory mofFactory)
         {
-            foreach(var pckg in mergePckgs.MergedPackage.PackagedElement)
+            Console.WriteLine("______________________________________________________________________________________________________");
+            foreach (var assocInUml in umlModel.Objects.OfType<AssociationBuilder>())
             {
-
-                Console.WriteLine("  " + pckg.Name + "  Type: " + pckg.GetType());
-
-                if (pckg is PackageBuilder pckgpb)
+                if (assocInUml.MemberEnd.Count == 2)
                 {
-                    var umlPckg = umlModel.Objects.OfType<PackageBuilder>().First(pb => pb.Name == pckg.Name);
+                    //Console.WriteLine();
+                    PropertyBuilder memberEnd0InMof = null;
+                    PropertyBuilder memberEnd1InMof = null;
 
-                    // going through elements of package, that can be ClassBuilder, EnumerationBuilder etc...
-                    foreach (var pElem in umlPckg.PackagedElement)
+                    if (assocInUml.OwnedEnd.Count == 0)
                     {
-                        if (pElem is ClassBuilder cb)
+                        ClassBuilder classMemberend0 = mof.PackagedElement.OfType<ClassBuilder>()
+                            .FirstOrDefault(cb => cb.Name == assocInUml.MemberEnd[0].Class.Name);
+                        ClassBuilder classMemberend1 = mof.PackagedElement.OfType<ClassBuilder>()
+                            .FirstOrDefault(cb => cb.Name == assocInUml.MemberEnd[1].Class.Name);
+                        if (classMemberend0 != null && classMemberend1 != null)
                         {
-                            // find class in cmof
+                            memberEnd0InMof = classMemberend0.OwnedAttribute.FirstOrDefault(a => a.Name == assocInUml.MemberEnd[0].Name);
+                            memberEnd1InMof = classMemberend1.OwnedAttribute.FirstOrDefault(a => a.Name == assocInUml.MemberEnd[1].Name);
 
-                            ClassBuilder cmofClass = null;
-
-                            cmofClass = cmof.PackagedElement.OfType<ClassBuilder>().First(cmofcb => cmofcb.Name == cb.Name);
-
-                            // find associations of class
-                            foreach(var attr in cb.OwnedAttribute)
+                            if (memberEnd0InMof != null && memberEnd1InMof != null)
                             {
-                                PropertyBuilder cmofAttr = null;
-                                try
-                                {
-                                    cmofAttr = cmofClass.OwnedAttribute.First(oa => oa.Name == attr.Name);
-                                }
-                                catch
-                                {
-                                    cmofAttr = cmofClass.OwnedAttribute.First(oa => oa.Name == "_" + attr.Name);
-                                }
-                                foreach (var ass in attr.Association)
-                                {
-                                    AssociationBuilder cmofAss = cmof.PackagedElement.OfType<AssociationBuilder>().First(asb => asb.Name == ass.Name);
-                                    // set the correct association
-                                    cmofAttr.Association.Add(cmofAss);
-                                }
+                                AssociationBuilder newAssoc = mofFactory.Association();
+                                newAssoc.Name = assocInUml.Name;
+                                newAssoc.MemberEnd.Add(memberEnd0InMof);
+                                newAssoc.MemberEnd.Add(memberEnd1InMof);
+                                mof.PackagedElement.Add(newAssoc);
+                                Console.WriteLine("Added association: " + assocInUml.Name);
                             }
                         }
                     }
-                }
-                else
-                {
-                    Console.WriteLine("  ## Packaged Element is not of type PackageBuilder");
+                    else
+                    {
+                        ClassBuilder classMemberend0 = mof.PackagedElement.OfType<ClassBuilder>()
+                            .FirstOrDefault(cb => cb.Name == assocInUml.MemberEnd[0].Type.Name);
+                        ClassBuilder classMemberend1 = mof.PackagedElement.OfType<ClassBuilder>()
+                            .FirstOrDefault(cb => cb.Name == assocInUml.MemberEnd[1].Type.Name);
+
+                        if (classMemberend0 != null && classMemberend1 != null)
+                        {
+                            memberEnd0InMof = classMemberend0.OwnedAttribute.FirstOrDefault(a => a.Name == assocInUml.MemberEnd[1].Name);
+                            memberEnd1InMof = classMemberend1.OwnedAttribute.FirstOrDefault(a => a.Name == assocInUml.MemberEnd[0].Name);
+                            if (memberEnd0InMof != null && memberEnd1InMof != null)
+                            {
+                                AssociationBuilder newAssoc = mofFactory.Association();
+                                newAssoc.Name = assocInUml.Name;
+                                //newAssoc.MemberEnd.Add(memberEnd1InMof);
+                                //Console.WriteLine(memberEnd0InMof.Type.Name);
+                                //Console.WriteLine(memberEnd1InMof.Type.Name);
+                                try
+                                {
+                                    PropertyBuilder ownedEnd0Clone = CloneAttribute(assocInUml.OwnedEnd[0], mofFactory);
+                                    newAssoc.OwnedEnd.Add(ownedEnd0Clone);
+                                }
+                                catch (Exception ex)
+                                {
+                                    Console.WriteLine(ex.Message);
+                                    continue;
+                                }
+
+                                newAssoc.MemberEnd.Add(memberEnd0InMof);
+                                mof.PackagedElement.Add(newAssoc);
+                                Console.WriteLine("Added optional association: " + assocInUml.Name);
+                            }
+                        }
+
+                    }
                 }
             }
         }

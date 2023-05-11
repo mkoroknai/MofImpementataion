@@ -88,7 +88,7 @@ namespace MofBootstrap
             
             //Console.WriteLine("Merge EMOF parts of UML into MOF::Reflection");
 
-            Dictionary<MutableObject, MutableObject> umlToMof = MergeUmlToMofReflection();
+            Dictionary<MutableObject, MutableObject> umlToMof = MergeUmlToMofReflectionEmof();
 
             // need to merge MOF::CMOFReflection::Argument into MOF::Reflection, because of class Object
             MergeArgumentIntoMof();
@@ -118,6 +118,8 @@ namespace MofBootstrap
                 AddAllReferencedClassesToEmof(umlToMof);
             }
 
+            AddAssociationsFromUmlToEmof();
+
             Console.WriteLine();
             Console.WriteLine("Essential MOF generated.");
 
@@ -137,7 +139,7 @@ namespace MofBootstrap
         public void GenerateCompleteMof(bool removeUnknownTypedElements,
                                         string fileNameForGeneratedModel = "../../../../MofImplementationLib/Model/Mof.mm")
         {
-            Dictionary<MutableObject, MutableObject> umlToMof = MergeUmlToMofReflection();
+            Dictionary<MutableObject, MutableObject> umlToMof = MergeUmlToMofReflectionCmof();
 
             // need to merge MOF::CMOFReflection::Argument into MOF::Reflection, because of class Object
             MergeArgumentIntoMof();
@@ -181,6 +183,13 @@ namespace MofBootstrap
                 AddAllReferencedClassesToCmof(umlToMof);
             }
 
+            AddAssociationsFromUmlToCmof();
+
+            foreach(var a in Cmof.PackagedElement.OfType<AssociationBuilder>())
+            {
+                Console.WriteLine("\t\t" + a.Name + " member end count: " + a.MemberEnd.Count);
+            }
+
 
             Console.WriteLine();
             Console.WriteLine("Complete MOF generated.");
@@ -188,9 +197,14 @@ namespace MofBootstrap
             GenerateCmofmmFile(fileNameForGeneratedModel);
         }
 
-        public Dictionary<MutableObject, MutableObject> MergeUmlToMofReflection()
+        public Dictionary<MutableObject, MutableObject> MergeUmlToMofReflectionEmof()
         {
             return UmlToMof.UmlToMofReflectionEmof(UmlModel, MofReflection, MofFactory);
+        }
+
+        public Dictionary<MutableObject, MutableObject> MergeUmlToMofReflectionCmof()
+        {
+            return UmlToMof.UmlToMofReflectionCmof(UmlModel, MofReflection, MofFactory);
         }
 
         public void MergeMofReflectionIntoMofExtension()
@@ -314,6 +328,15 @@ namespace MofBootstrap
                     }
                 }
             }
+        }
+
+        public void AddAssociationsFromUmlToEmof()
+        {
+            MergeHelper.AssociationMatching(UmlModel, MofEmof, MofFactory);
+        }
+        public void AddAssociationsFromUmlToCmof()
+        {
+            MergeHelper.AssociationMatching(UmlModel, Cmof, MofFactory);
         }
     }
 }

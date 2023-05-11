@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace MofTestProjDotNetCore
 {
-	static class TstConstants
+	static class TestConstants
 	{
 		public static readonly string[] Association_EndType =
 		{

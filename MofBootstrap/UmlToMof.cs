@@ -35,7 +35,7 @@ namespace MofBootstrap
                 if(mofReflection.PackagedElement.Where(pe => pe.Name == umlClsName).FirstOrDefault() != null)
                 {
                     // the class is already in mofReflection, so it needs to be merged
-                    Console.WriteLine("there is already a class called " + umlClsName + " in mofReflection, so it needs to be merged");
+                    //Console.WriteLine("there is already a class called " + umlClsName + " in mofReflection, so it needs to be merged");
                     //throw new Exception("there is already a class called " + umlClsName + " in mofReflection, so it needs to be merged");
                 }
                 else
@@ -110,7 +110,7 @@ namespace MofBootstrap
             {
                 Console.WriteLine(e.Name);
             }
-            Console.WriteLine("____End");
+            Console.WriteLine("____");
 
             // dictionary for associations and subsetted properties
             Dictionary<MutableObject, MutableObject> umlToMof = new Dictionary<MutableObject, MutableObject>();
@@ -133,7 +133,7 @@ namespace MofBootstrap
 
                     // adding to dictionary
                     umlToMof.Add(umlClass, clone);
-                    Console.WriteLine("_:_:_:_ UML class: " + umlClsName + " added to mof");
+                    //Console.WriteLine("_:_:_:_ UML class: " + umlClsName + " added to mof");
 
                     // cloning superclasses and their superclasses too
                     int c;
@@ -367,7 +367,7 @@ namespace MofBootstrap
                     ClassBuilder classInUml = umlModel.Objects.OfType<ClassBuilder>().First(cb => cb.Name == g.General.Name);
                     classInMof = MergeHelper.MergeClasses(classInMof, classInUml, mofFactory);
 
-                    Console.WriteLine("  ...;;; " + g.General.Name);
+                    //Console.WriteLine("  ...;;; " + g.General.Name);
                 }
             }
             return counter;
