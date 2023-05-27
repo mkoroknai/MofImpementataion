@@ -342,11 +342,11 @@ namespace MofBootstrap
 
         public void AddAssociationsFromUmlToEmof()
         {
-            MergeHelper.MergeAssociationsFromUml(UmlModel, MofEmof, MofFactory);
+            MergeHelper.CopyAssociationsFromUml(UmlModel, MofEmof, MofFactory);
         }
         public void AddAssociationsFromUmlToCmof()
         {
-            MergeHelper.MergeAssociationsFromUml(UmlModel, Cmof, MofFactory);
+            MergeHelper.CopyAssociationsFromUml(UmlModel, Cmof, MofFactory);
         }
     }
 }

@@ -689,7 +689,7 @@ namespace MofBootstrap
         /// <param name="umlModel"></param>
         /// <param name="mergePckgs"></param>
         /// <param name="cmof"></param>
-        public static void MergeAssociationsFromUml(MutableModel umlModel, PackageBuilder mof, MofFactory mofFactory)
+        public static void CopyAssociationsFromUml(MutableModel umlModel, PackageBuilder mof, MofFactory mofFactory)
         {
             Console.WriteLine("_____________________________________Merging Associations from UML______________________________________");
             foreach (var assocInUml in umlModel.Objects.OfType<AssociationBuilder>())
