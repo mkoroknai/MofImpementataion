@@ -19,8 +19,8 @@ namespace MofTest
     {
         static void Main(string[] args)
         {
-            MofTestConstantsGen constantsGenerator = new MofTestConstantsGen();
-            constantsGenerator.GenerateUmlMethodConstants();
+            //MofTestConstantsGen constantsGenerator = new MofTestConstantsGen();
+            //constantsGenerator.GenerateUmlMethodConstants();
             //Test001();
             //MofXmiSerializer xmiSerializer = new MofXmiSerializer();
 
@@ -30,7 +30,7 @@ namespace MofTest
 
             //umlModel.
 
-            //TestGraph();
+            TestGraph();
             TestTestGraph();
 
         }
@@ -146,7 +146,6 @@ namespace MofTest
             vertexNeighborCount.Type = intType;
             vertexNeighborCount.Name = "NeighborCount";
             vertexNeighborCount.IsDerived = true;
-            vertexNeighborCount.Visibility = VisibilityKind.Private;
 
             // vertexNeighbors
             PropertyBuilder vertexNeighbors = factory.Property();
@@ -195,6 +194,7 @@ namespace MofTest
             PropertyBuilder graphSize = factory.Property();
             graphSize.Name = "Size";
             graphSize.Type = intType;
+            graphSize.IsDerived = true;
 
             PropertyBuilder graphVertices = factory.Property();
             graphVertices.Type = vertex;
@@ -267,6 +267,10 @@ namespace MofTest
             string mm_filepath = "../../../Model/UndirectedGraph.mm";
             File.WriteAllText(mm_filepath, generatedCode);
 
+            string xmi_filepath = "../../../Model/UndirectedGraph.xmi";
+            XmiSerializer xmiSerializer = new XmiSerializer();
+            xmiSerializer.WriteModelToFile(xmi_filepath, model);
+
             //MetaGeneratorCompiler mc = new MetaGeneratorCompiler(mm_filepath, "../../../Model/");
             //mc.Compile();
 
@@ -294,7 +298,14 @@ namespace MofTest
             graph1.AddVertex(vertex2);
             graph1.AddVertex(vertex3);
 
-            foreach(var n in vertex2.Neighbors)
+            SampleNamespace.VertexBuilder vertex4 = factory.Vertex();
+            vertex4.ID = "v4";
+            SampleNamespace.VertexBuilder vertex5 = factory.Vertex();
+            vertex5.ID = "v5";
+
+            graph1.AddPair(vertex4, vertex5);
+
+            foreach (var n in vertex4.Neighbors)
             {
                 Console.WriteLine(n.ID);
             }

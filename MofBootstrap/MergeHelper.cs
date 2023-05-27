@@ -62,10 +62,10 @@ namespace MofBootstrap
         /// <returns>the copy of the class</returns>
         public static ClassBuilder CloneClassIntoMofModel(ClassBuilder cb, MofFactory mofFactory)
         {
-            if(cb.Name == "RedefinableElement")
-            {
-                ;
-            }
+            //if(cb.Name == "RedefinableElement")
+            //{
+            //    ;
+            //}
             ClassBuilder newClass = mofFactory.Class();
 
             newClass.Name = cb.Name;
@@ -689,9 +689,9 @@ namespace MofBootstrap
         /// <param name="umlModel"></param>
         /// <param name="mergePckgs"></param>
         /// <param name="cmof"></param>
-        public static void AssociationMatching(MutableModel umlModel, PackageBuilder mof, MofFactory mofFactory)
+        public static void MergeAssociationsFromUml(MutableModel umlModel, PackageBuilder mof, MofFactory mofFactory)
         {
-            Console.WriteLine("______________________________________________________________________________________________________");
+            Console.WriteLine("_____________________________________Merging Associations from UML______________________________________");
             foreach (var assocInUml in umlModel.Objects.OfType<AssociationBuilder>())
             {
                 if (assocInUml.MemberEnd.Count == 2)
@@ -715,6 +715,8 @@ namespace MofBootstrap
                             {
                                 AssociationBuilder newAssoc = mofFactory.Association();
                                 newAssoc.Name = assocInUml.Name;
+                                memberEnd0InMof.Aggregation = assocInUml.MemberEnd[0].Aggregation;
+                                memberEnd1InMof.Aggregation = assocInUml.MemberEnd[1].Aggregation;
                                 newAssoc.MemberEnd.Add(memberEnd0InMof);
                                 newAssoc.MemberEnd.Add(memberEnd1InMof);
                                 mof.PackagedElement.Add(newAssoc);
@@ -743,6 +745,7 @@ namespace MofBootstrap
                                 try
                                 {
                                     PropertyBuilder ownedEnd0Clone = CloneAttribute(assocInUml.OwnedEnd[0], mofFactory);
+                                    ownedEnd0Clone.Aggregation = assocInUml.OwnedEnd[0].Aggregation;
                                     newAssoc.OwnedEnd.Add(ownedEnd0Clone);
                                 }
                                 catch (Exception ex)
@@ -751,6 +754,7 @@ namespace MofBootstrap
                                     continue;
                                 }
 
+                                memberEnd0InMof.Aggregation = assocInUml.MemberEnd[1].Aggregation;
                                 newAssoc.MemberEnd.Add(memberEnd0InMof);
                                 mof.PackagedElement.Add(newAssoc);
                                 Console.WriteLine("Added optional association: " + assocInUml.Name);

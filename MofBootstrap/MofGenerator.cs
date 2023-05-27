@@ -185,7 +185,17 @@ namespace MofBootstrap
 
             AddAssociationsFromUmlToCmof();
 
-            foreach(var a in Cmof.PackagedElement.OfType<AssociationBuilder>())
+            ClassBuilder multiplicityElement = Cmof.PackagedElement.OfType<ClassBuilder>().First(c => c.Name == "MultiplicityElement");
+            ClassBuilder literalInteger = Cmof.PackagedElement.OfType<ClassBuilder>().First(c => c.Name == "LiteralInteger");
+            ClassBuilder literalUnlimited = Cmof.PackagedElement.OfType<ClassBuilder>().First(c => c.Name == "LiteralUnlimitedNatural");
+
+            PropertyBuilder lowerValue = multiplicityElement.OwnedAttribute.First(a => a.Name == "lowerValue");
+            PropertyBuilder upperValue = multiplicityElement.OwnedAttribute.First(a => a.Name == "upperValue");
+
+            lowerValue.Type = literalInteger;
+            upperValue.Type = literalUnlimited;
+
+            foreach (var a in Cmof.PackagedElement.OfType<AssociationBuilder>())
             {
                 Console.WriteLine("\t\t" + a.Name + " member end count: " + a.MemberEnd.Count);
             }
@@ -332,11 +342,11 @@ namespace MofBootstrap
 
         public void AddAssociationsFromUmlToEmof()
         {
-            MergeHelper.AssociationMatching(UmlModel, MofEmof, MofFactory);
+            MergeHelper.MergeAssociationsFromUml(UmlModel, MofEmof, MofFactory);
         }
         public void AddAssociationsFromUmlToCmof()
         {
-            MergeHelper.AssociationMatching(UmlModel, Cmof, MofFactory);
+            MergeHelper.MergeAssociationsFromUml(UmlModel, Cmof, MofFactory);
         }
     }
 }
