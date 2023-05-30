@@ -9,99 +9,20 @@ using System.Linq;
 
 namespace MofBootstrap
 {
-    public static class UmlToMof
+    public class UmlToMof
     {
         static readonly string removedFileName = "RemovedElements.txt";
 
-        public static Dictionary<MutableObject, MutableObject> UmlToMofReflectionEmof
-            (MutableModel umlModel, PackageBuilder mofReflection, MofFactory mofFactory)
+        MergeHelper MergeHelper;
+        Dictionary<MutableObject, MutableObject> UmlToMofDict;
+
+        public UmlToMof(MergeHelper mergeHelper)
         {
-
-            // listing classes already in MOF::Reflection
-            foreach(var e in mofReflection.PackagedElement)
-            {
-                Console.WriteLine(e.Name);
-            }
-
-            // dictionary for associations and subsetted properties
-            Dictionary<MutableObject, MutableObject> umlToMof = new Dictionary<MutableObject, MutableObject>();
-
-
-            foreach (string umlClsName in Constants.UML_CLASSES_TO_BE_MERGED_INTO_EMOF)
-            {
-
-                Console.WriteLine(umlClsName);
-                
-                if(mofReflection.PackagedElement.Where(pe => pe.Name == umlClsName).FirstOrDefault() != null)
-                {
-                    // the class is already in mofReflection, so it needs to be merged
-                    //Console.WriteLine("there is already a class called " + umlClsName + " in mofReflection, so it needs to be merged");
-                    //throw new Exception("there is already a class called " + umlClsName + " in mofReflection, so it needs to be merged");
-                }
-                else
-                {
-                    ClassBuilder umlClass = umlModel.Objects.OfType<ClassBuilder>().First(cb => cb.Name == umlClsName);
-                    ClassBuilder clone = MergeHelper.CloneClassIntoMofModel(umlClass, mofFactory);
-                    mofReflection.PackagedElement.Add(clone);
-
-                    // adding to dictionary
-                    umlToMof.Add(umlClass, clone);
-
-                    // cloning superclasses and their superclasses too
-                    int c;
-                    if((c = AddGeneralsToMof(umlModel, umlClass, mofReflection, mofFactory, umlToMof)) > 0)
-                    {
-                        Console.WriteLine("  " + c + " superclasses added in UmlToMofReflectionEmof()");
-                    }
-                }
-            }
-
-
-
-
-
-            // based on the MOF2.5.1 specification, the type of
-            // Operation::raisedException needs to be Class rather than Type:
-            ClassBuilder EmofOperation = mofReflection.PackagedElement.OfType<ClassBuilder>().First(cb => cb.Name == "Operation");
-            PropertyBuilder Op_raisedEx = EmofOperation.OwnedAttribute.First(attr => attr.Name == "raisedException");
-            TypeBuilder typeClass = mofFactory.Type();
-            typeClass.Name = "Class";
-            Op_raisedEx.Type = typeClass;
-
-            // based on the MOF2.5.1 specification
-            // the following properties must be empty:
-            for (int i = 0; i < Constants.UML_CLASS_PROPERTIES_TO_BE_EMPTY_EMOF.Length; i += 2)
-            {
-                string className = Constants.UML_CLASS_PROPERTIES_TO_BE_EMPTY_EMOF[i];
-                string propName = Constants.UML_CLASS_PROPERTIES_TO_BE_EMPTY_EMOF[i + 1];
-
-                PropertyBuilder prop = mofReflection.PackagedElement.OfType<ClassBuilder>().First(cb => cb.Name == className).
-                                                                             OwnedAttribute.First(at => at.Name == propName);
-                // set prop empty here ????
-                
-            }
-
-            // based on the MOF2.5.1 specification
-            // the following properties must be false:
-            for (int i = 0; i < Constants.UML_CLASS_PROPERTIES_TO_BE_FALSE_EMOF.Length; i += 2)
-            {
-                string className = Constants.UML_CLASS_PROPERTIES_TO_BE_FALSE_EMOF[i];
-                string propName = Constants.UML_CLASS_PROPERTIES_TO_BE_FALSE_EMOF[i + 1];
-
-                PropertyBuilder prop = mofReflection.PackagedElement.OfType<ClassBuilder>().First(cb => cb.Name == className).
-                                                                             OwnedAttribute.First(at => at.Name == propName);
-                // set prop false here ????
-                ValueSpecificationBuilder defaultVal = mofFactory.ValueSpecification();
-                //defaultVal.Name = "False";
-                //prop.DefaultValue = defaultVal;
-            }
-
-            return umlToMof;
+            MergeHelper = mergeHelper;
+            UmlToMofDict = new Dictionary<MutableObject, MutableObject>();
         }
 
-
-        public static Dictionary<MutableObject, MutableObject> UmlToMofReflectionCmof
-                     (MutableModel umlModel, PackageBuilder mofReflection, MofFactory mofFactory)
+        public void UmlToMofReflection(MutableModel umlModel, PackageBuilder mofReflection, MofFactory mofFactory)
         {
 
             Console.WriteLine("listing classes already in MOF::Reflection:");
@@ -116,23 +37,25 @@ namespace MofBootstrap
             Dictionary<MutableObject, MutableObject> umlToMof = new Dictionary<MutableObject, MutableObject>();
 
 
-            foreach (string umlClsName in Constants.UML_CLASSES_TO_BE_MERGED_INTO_CMOF)
+            foreach (string umlClsName in MergeHelper.classesToBeMergedFromUml)
             {
 
                 if (mofReflection.PackagedElement.Where(pe => pe.Name == umlClsName).FirstOrDefault() != null)
                 {
                     // the class is already in mofReflection, so it needs to be merged
-                    Console.WriteLine("there is already a class called " + umlClsName + " in mofReflection, so it needs to be merged");
+                    Console.WriteLine("there is already a class called " + umlClsName + " in mofReflection");
                     //throw new Exception("there is already a class called " + umlClsName + " in mofReflection, so it needs to be merged");
                 }
                 else
                 {
                     ClassBuilder umlClass = umlModel.Objects.OfType<ClassBuilder>().First(cb => cb.Name == umlClsName);
-                    ClassBuilder clone = MergeHelper.CloneClassIntoMofModel(umlClass, mofFactory);
+                    ClassBuilder clone = MergeHelper.CloneClassIntoMofModel(umlClass, mofFactory, mofReflection);
+
                     mofReflection.PackagedElement.Add(clone);
 
                     // adding to dictionary
                     umlToMof.Add(umlClass, clone);
+                    UmlToMofDict.Add(umlClass, clone);
                     //Console.WriteLine("_:_:_:_ UML class: " + umlClsName + " added to mof");
 
                     // cloning superclasses and their superclasses too
@@ -144,204 +67,174 @@ namespace MofBootstrap
                 }
             }
 
+            // setting types
+            AddRefs(umlModel, mofReflection, mofFactory, umlToMof);
 
 
 
+            //// based on the MOF2.5.1 specification, the type of
+            //// Operation::raisedException needs to be Class rather than Type:
+            //ClassBuilder EmofOperation = mofReflection.PackagedElement.OfType<ClassBuilder>().First(cb => cb.Name == "Operation");
+            //PropertyBuilder Op_raisedEx = EmofOperation.OwnedAttribute.First(attr => attr.Name == "raisedException");
+            //TypeBuilder typeClass = mofFactory.Type();
+            //typeClass.Name = "Class";
+            //Op_raisedEx.Type = typeClass;
+            //
+            //// the following properties must be empty:
+            //for (int i = 0; i < Constants.UML_CLASS_PROPERTIES_TO_BE_EMPTY_CMOF.Length; i += 2)
+            //{
+            //    string className = Constants.UML_CLASS_PROPERTIES_TO_BE_EMPTY_CMOF[i];
+            //    string propName = Constants.UML_CLASS_PROPERTIES_TO_BE_EMPTY_CMOF[i + 1];
+            //
+            //    PropertyBuilder prop = mofReflection.PackagedElement.OfType<ClassBuilder>().First(cb => cb.Name == className).
+            //                                                                 OwnedAttribute.First(at => at.Name == propName);
+            //    // set prop empty here ????
+            //
+            //}
+            //
+            //// based on the MOF2.5.1 specification
+            //// the following properties must be false:
+            //for (int i = 0; i < Constants.UML_CLASS_PROPERTIES_TO_BE_FALSE_CMOF.Length; i += 2)
+            //{
+            //    string className = Constants.UML_CLASS_PROPERTIES_TO_BE_FALSE_CMOF[i];
+            //    string propName = Constants.UML_CLASS_PROPERTIES_TO_BE_FALSE_CMOF[i + 1];
+            //
+            //    PropertyBuilder prop = mofReflection.PackagedElement.OfType<ClassBuilder>().First(cb => cb.Name == className).
+            //                                                                 OwnedAttribute.First(at => at.Name == propName);
+            //    // set prop false here ????
+            //    ValueSpecificationBuilder defaultVal = mofFactory.ValueSpecification();
+            //    //defaultVal.Type = mofFactory.LiteralBoolean();
+            //    //prop.DefaultValue = 
+            //}
 
-            // based on the MOF2.5.1 specification, the type of
-            // Operation::raisedException needs to be Class rather than Type:
-            ClassBuilder EmofOperation = mofReflection.PackagedElement.OfType<ClassBuilder>().First(cb => cb.Name == "Operation");
-            PropertyBuilder Op_raisedEx = EmofOperation.OwnedAttribute.First(attr => attr.Name == "raisedException");
-            TypeBuilder typeClass = mofFactory.Type();
-            typeClass.Name = "Class";
-            Op_raisedEx.Type = typeClass;
-
-            // the following properties must be empty:
-            for (int i = 0; i < Constants.UML_CLASS_PROPERTIES_TO_BE_EMPTY_CMOF.Length; i += 2)
-            {
-                string className = Constants.UML_CLASS_PROPERTIES_TO_BE_EMPTY_CMOF[i];
-                string propName = Constants.UML_CLASS_PROPERTIES_TO_BE_EMPTY_CMOF[i + 1];
-
-                PropertyBuilder prop = mofReflection.PackagedElement.OfType<ClassBuilder>().First(cb => cb.Name == className).
-                                                                             OwnedAttribute.First(at => at.Name == propName);
-                // set prop empty here ????
-
-            }
-
-            // based on the MOF2.5.1 specification
-            // the following properties must be false:
-            for (int i = 0; i < Constants.UML_CLASS_PROPERTIES_TO_BE_FALSE_CMOF.Length; i += 2)
-            {
-                string className = Constants.UML_CLASS_PROPERTIES_TO_BE_FALSE_CMOF[i];
-                string propName = Constants.UML_CLASS_PROPERTIES_TO_BE_FALSE_CMOF[i + 1];
-
-                PropertyBuilder prop = mofReflection.PackagedElement.OfType<ClassBuilder>().First(cb => cb.Name == className).
-                                                                             OwnedAttribute.First(at => at.Name == propName);
-                // set prop false here ????
-                ValueSpecificationBuilder defaultVal = mofFactory.ValueSpecification();
-                //defaultVal.Type = mofFactory.LiteralBoolean();
-                //prop.DefaultValue = 
-            }
-
-            return umlToMof;
+            return;
         }
 
-        /// <summary>
-        /// removes class elements that reference non-existing classes in MOF
-        /// </summary>
-        /// <param name="mof"></param>
-        public static void RemoveUnknownProperties(PackageBuilder mof)
-        {
-            ClassClassElementList cceList = new ClassClassElementList();
-
-            foreach(var cls in mof.PackagedElement.OfType<ClassBuilder>())
-            {
-                foreach (var attr in cls.OwnedAttribute)
-                {
-                    TypeBuilder attrType = attr.Type;
-                    if (!(attrType is PrimitiveTypeBuilder))
-                    {
-                        if (mof.PackagedElement.OfType<ClassBuilder>().Where(cb => cb.Name == attrType.Name).FirstOrDefault() == null)
-                        {
-                            // the class does not exist in MOF, so the class attribute needs to be removed
-                            cceList.Add(new ClassClassElement(cls.Name, attr.Name, attrType.Name));
-                            cls.OwnedAttribute.Remove(attr);
-                        }
-                    }
-                }
-                foreach (var op in cls.OwnedOperation)
-                {
-                    foreach (var par in op.OwnedParameter)
-                    {
-                        TypeBuilder parType = par.Type;
-                        if (!(parType is PrimitiveTypeBuilder))
-                        {
-                            if (mof.PackagedElement.OfType<ClassBuilder>().Where(cb => cb.Name == parType.Name).FirstOrDefault() == null)
-                            {
-                                // the class does not exist in MOF, so the class operation needs to be removed
-                                cceList.Add(new ClassClassElement(cls.Name, op.Name + "()", parType.Name));
-                                cls.OwnedOperation.Remove(op);
-                            }
-                        }
-                    }
-                }
-            }
-
-            File.WriteAllText(removedFileName, cceList.ToString());
-            Console.WriteLine();
-            Console.WriteLine("The list of removed elements is in " + removedFileName);
-            Console.WriteLine();
-        }
-
-
-        /// <summary>
-        /// adds metaclasses that are not in MOF yet, but are referenced by other class variables
-        /// </summary>
-        /// <param name="mof"></param>
-        /// <param name="umlModel"></param>
-        /// <param name="mofFactory"></param>
-        /// <param name="umlToMof"></param>
-        /// <returns></returns>
-        public static int AddReferencedClasses(PackageBuilder mof, MutableModel umlModel, MofFactory mofFactory, Dictionary<MutableObject, MutableObject> umlToMof)
+        public int AddRefs(MutableModel umlModel, PackageBuilder mof, MofFactory mofFactory, Dictionary<MutableObject, MutableObject> umlToMof)
         {
             int counter = 0;
-            foreach (var cls in mof.PackagedElement.OfType<ClassBuilder>())
+            Dictionary<MutableObject, MutableObject> umlToMofTemp = new Dictionary<MutableObject, MutableObject>();
+
+            foreach (var pair in umlToMof)
             {
-                foreach (var attr in cls.OwnedAttribute)
+                var cb = pair.Value as ClassBuilder;
+                var cbUml = pair.Key as ClassBuilder;
+
+                foreach (var a in cb.OwnedAttribute)
                 {
-                    TypeBuilder attrType = attr.Type;
-                    if (!(attrType is PrimitiveTypeBuilder))
+                    if (a.Type == null)
                     {
-                        if (mof.PackagedElement.Where(cb => cb.Name == attrType.Name).FirstOrDefault() == null)
+
+                        var attrInUml = cbUml.OwnedAttribute.FirstOrDefault(ua => ua.Name == a.Name);
+
+                        if (attrInUml.Type is ClassBuilder typeClassInUml)
                         {
-                            // the class does not exist in MOF, so the metaclass of the attribute needs to be added
-                            // look for it in UML
-
-                            var umlElement = umlModel.Objects.First(cb => cb.MName == attrType.Name);
-
-                            if(umlElement is ClassBuilder umlClass)
+                            var existingType = mof.PackagedElement.OfType<ClassBuilder>().FirstOrDefault(cbb => cbb.Name == typeClassInUml.Name);
+                            if (existingType != null)
                             {
-                                ClassBuilder clone = MergeHelper.CloneClassIntoMofModel(umlClass, mofFactory);
-                                mof.PackagedElement.Add(clone);
-
-                                // adding to dictionary
-                                umlToMof.Add(umlClass, clone);
-                                counter++;
-
-                                // cloning superclasses and their superclasses too
-                                int c;
-                                if ((c = AddGeneralsToMof(umlModel, umlClass, mof, mofFactory, umlToMof)) > 0)
-                                {
-                                    Console.WriteLine("  " + c + " superclasses added in AddReferencedClasses()");
-                                }
-                            }
-
-                            else if (umlElement is EnumerationBuilder umlEnum)
-                            {
-                                EnumerationBuilder clone = MergeHelper.CloneEnumIntoMofModel(umlEnum, mofFactory);
-                                mof.PackagedElement.Add(clone);
-                                counter++;
+                                a.Type = existingType;
                             }
                             else
                             {
-                                Console.WriteLine("\t" + attrType.Name + " not class nor enum");
+                                var clone = MergeHelper.CloneClassIntoMofModel(typeClassInUml, mofFactory, mof);
+                                mof.PackagedElement.Add(clone);
+                                a.Type = clone;
+                                counter++;
+                                umlToMofTemp.Add(typeClassInUml, clone);
+                                UmlToMofDict.TryAdd(typeClassInUml, clone);
+                                Console.WriteLine("added class " + clone.Name + " to MOF");
+
+                                AddGeneralsToMof(umlModel, typeClassInUml, mof, mofFactory, umlToMofTemp);
                             }
+                        }
+                        else if(attrInUml.Type is EnumerationBuilder typeEnumInUml)
+                        {
+                            var existingType = mof.PackagedElement.OfType<EnumerationBuilder>().FirstOrDefault(ebb => ebb.Name == typeEnumInUml.Name);
+                            if (existingType != null)
+                            {
+                                a.Type = existingType;
+                            }
+                            else
+                            {
+                                var clone = MergeHelper.CloneEnumIntoMofModel(typeEnumInUml, mofFactory);
+                                mof.PackagedElement.Add(clone);
+                                a.Type = clone;
+                                counter++;
+                                Console.WriteLine("added enum " + clone.Name + " to MOF");
+                            }
+                        }
+                        else
+                        {
+                            Console.WriteLine(" not class nor enum");
                         }
                     }
                 }
-                foreach (var op in cls.OwnedOperation)
+
+                foreach (var o in cb.OwnedOperation)
                 {
-                    foreach (var par in op.OwnedParameter)
+                    foreach (var p in o.OwnedParameter)
                     {
-                        TypeBuilder parType = par.Type;
-                        if(!(parType is PrimitiveTypeBuilder))
+
+                        if (p.Type == null)
                         {
-                            if (mof.PackagedElement.Where(cb => cb.Name == parType.Name).FirstOrDefault() == null)
+
+                            var opInUml = cbUml.OwnedOperation.FirstOrDefault(uo => uo.Name == o.Name);
+
+                            var parInUml = opInUml.OwnedParameter.FirstOrDefault(up => up.Name == p.Name);
+
+                            if (parInUml.Type is ClassBuilder typeClassInUml)
                             {
-                                // the class does not exist in MOF, so the metaclass of the parameter of the operation needs to be added
+                                var existingType = mof.PackagedElement.OfType<ClassBuilder>().FirstOrDefault(cbb => cbb.Name == typeClassInUml.Name);
 
-                                // the class does not exist in MOF, so the metaclass of the attribute needs to be added
-                                // look for it in UML
-
-                                var umlElement = umlModel.Objects.First(cb => cb.MName == parType.Name);
-
-                                if(umlElement is ClassBuilder umlClass)
+                                if (existingType != null)
                                 {
-                                    ClassBuilder clone = MergeHelper.CloneClassIntoMofModel(umlClass, mofFactory);
-                                    mof.PackagedElement.Add(clone);
-
-                                    // adding to dictionary
-                                    umlToMof.Add(umlClass, clone);
-                                    counter++;
-
-                                    // cloning superclasses and their superclasses too
-                                    int c;
-                                    if ((c = AddGeneralsToMof(umlModel, umlClass, mof, mofFactory, umlToMof)) > 0)
-                                    {
-                                        Console.WriteLine("  " + c + " superclasses added in AddReferencedClasses()");
-                                    }
-                                }
-
-                                else if(umlElement is EnumerationBuilder umlEnum)
-                                {
-                                    EnumerationBuilder clone = MergeHelper.CloneEnumIntoMofModel(umlEnum, mofFactory);
-                                    mof.PackagedElement.Add(clone);
-                                    counter++;
+                                    p.Type = existingType;
                                 }
                                 else
                                 {
-                                    Console.WriteLine("\t" + parType.Name + " not class nor enum");
+                                    var clone = MergeHelper.CloneClassIntoMofModel(typeClassInUml, mofFactory, mof);
+                                    mof.PackagedElement.Add(clone);
+                                    p.Type = clone;
+                                    counter++;
+                                    umlToMofTemp.Add(typeClassInUml, clone);
+                                    UmlToMofDict.TryAdd(typeClassInUml, clone);
+                                    Console.WriteLine("added class " + clone.Name + " to MOF");
+                                    AddGeneralsToMof(umlModel, typeClassInUml, mof, mofFactory, umlToMofTemp);
                                 }
+                            }
+                            else if (parInUml.Type is EnumerationBuilder typeEnumInUml)
+                            {
+                                var existingType = mof.PackagedElement.OfType<EnumerationBuilder>().FirstOrDefault(ebb => ebb.Name == typeEnumInUml.Name);
+                                if (existingType != null)
+                                {
+                                    p.Type = existingType;
+                                }
+                                else
+                                {
+                                    var clone = MergeHelper.CloneEnumIntoMofModel(typeEnumInUml, mofFactory);
+                                    mof.PackagedElement.Add(clone);
+                                    p.Type = clone;
+                                    counter++;
+                                    Console.WriteLine("added enum " + clone.Name + " to MOF");
+                                }
+                            }
+                            else
+                            {
+                                Console.WriteLine(" not class nor enum");
                             }
                         }
                     }
                 }
             }
+
+            Console.WriteLine("Added " + counter + " types to MOF...");
+
+            if (counter != 0) AddRefs(umlModel, mof, mofFactory, umlToMofTemp);
 
             return counter;
         }
 
-        static int AddGeneralsToMof(MutableModel umlModel, ClassBuilder umlClass,
+        int AddGeneralsToMof(MutableModel umlModel, ClassBuilder umlClass,
                                     PackageBuilder mof, MofFactory mofFactory,
                                     Dictionary<MutableObject, MutableObject> umlToMof)
         {
@@ -352,11 +245,12 @@ namespace MofBootstrap
                 if (mof.PackagedElement.Where(pe => pe.Name == g.General.Name).FirstOrDefault() == null)
                 {
                     ClassBuilder generalClass = umlModel.Objects.OfType<ClassBuilder>().First(cb => cb.Name == g.General.Name);
-                    ClassBuilder generalClone = MergeHelper.CloneClassIntoMofModel(generalClass, mofFactory);
+                    ClassBuilder generalClone = MergeHelper.CloneClassIntoMofModel(generalClass, mofFactory, mof);
                     mof.PackagedElement.Add(generalClone);
                     Console.WriteLine("    " + generalClone.Name + " superclass to " + umlClass.Name + " added to mof.");
                     // don't forget to add to dictionary for subsetted props and associations
                     umlToMof.Add(generalClass, generalClone);
+                    UmlToMofDict.Add(generalClass, generalClone);
                     counter++;
                     counter += AddGeneralsToMof(umlModel, generalClass, mof, mofFactory, umlToMof);
                 }
@@ -365,26 +259,17 @@ namespace MofBootstrap
                     // there is already a class with the same name in the MOF model, so let's merge it
                     ClassBuilder classInMof = mof.PackagedElement.OfType<ClassBuilder>().First(cb => cb.Name == g.General.Name);
                     ClassBuilder classInUml = umlModel.Objects.OfType<ClassBuilder>().First(cb => cb.Name == g.General.Name);
-                    classInMof = MergeHelper.MergeClasses(classInMof, classInUml, mofFactory);
-
-                    //Console.WriteLine("  ...;;; " + g.General.Name);
+                    classInMof = MergeHelper.MergeClasses(classInMof, classInUml, mofFactory, mof);
+                    umlToMof.TryAdd(classInUml, classInMof);
+                    UmlToMofDict.TryAdd(classInUml, classInMof);
+                    //Console.WriteLine("  ...;;; merged " + g.General.Name);
                 }
             }
             return counter;
         }
 
-        public static void AddAllReferencedClasses(PackageBuilder mof, MutableModel umlModel, MofFactory mofFactory, Dictionary<MutableObject, MutableObject> umlToMof)
-        {
-            int c;
-            while ((c = AddReferencedClasses(mof, umlModel, mofFactory, umlToMof)) != 0)
-            {
-                // adding classes that are referenced by new classes
-                Console.WriteLine("\t " + c + " referenced classes or enums added");
-            }
-        }
 
-
-        public static int AddSuperClasses(PackageBuilder mof, MutableModel umlModel, MofFactory mofFactory, Dictionary<MutableObject, MutableObject> umlToMof)
+        public int AddSuperClasses(PackageBuilder mof, MutableModel umlModel, MofFactory mofFactory, Dictionary<MutableObject, MutableObject> umlToMof)
         {
             int counter = 0;
 
@@ -399,6 +284,68 @@ namespace MofBootstrap
             }
 
             return counter;
+        }
+
+
+        public void SetSubsets(MutableModel uml, PackageBuilder cmof)
+        {
+            foreach (var pair in UmlToMofDict)
+            {
+                var key = pair.Key;
+                if (key is ClassBuilder umlClass)
+                {
+                    ClassBuilder cmofClass = null;
+                    cmofClass = cmof.PackagedElement.OfType<ClassBuilder>().First(c => c.Name == umlClass.Name);
+                    // go through attributes
+                    foreach (var umlAttr in umlClass.OwnedAttribute)
+                    {
+                        // if there is a subsettedProperty of the attribute, find the attribute in cmofClass
+                        if (umlAttr.SubsettedProperty.Count > 0)
+                        {
+                            PropertyBuilder cmofAttr = null;
+                            try
+                            {
+                                cmofAttr = cmofClass.OwnedAttribute.First(oa => oa.Name == umlAttr.Name);
+                            }
+                            catch
+                            {
+                                cmofAttr = cmofClass.OwnedAttribute.First(oa => oa.Name == "_" + umlAttr.Name);
+                            }
+
+                            // go through subsettedProperties
+                            foreach (var umlSubsP in umlAttr.SubsettedProperty)
+                            {
+                                if (!(umlSubsP.MParent is AssociationBuilder))
+                                {
+                                    // look for it in cmof, then add it to cmofAttr
+                                    ClassBuilder cmofSubsPClass = null;
+                                    cmofSubsPClass = cmof.PackagedElement.OfType<ClassBuilder>().First(c => c.Name == umlSubsP.MParent.MName);
+
+                                    PropertyBuilder cmofSubsProp = null;
+                                    try
+                                    {
+                                        cmofSubsProp = cmofSubsPClass.OwnedAttribute.First(c => c.Name == umlSubsP.Name);
+                                    }
+                                    catch
+                                    {
+                                        cmofSubsProp = cmofSubsPClass.OwnedAttribute.First(c => c.Name == "_" + umlSubsP.Name);
+                                    }
+
+                                    cmofAttr.SubsettedProperty.Add(cmofSubsProp);
+
+                                    //Console.WriteLine(umlSubsP.Name + "\t" + umlSubsP.MParent.MName);
+
+                                    //cmofAttr.SubsettedProperty.Add(cmofSubsP);
+                                }
+                                else
+                                {
+                                    //Console.WriteLine("\t\t" + umlSubsP.MParent.MName + " is Association");
+                                }
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
 }

@@ -36,9 +36,13 @@ using System.Text;
 ///// </summary>
 //Connector Connector subsets Element.Owner;
 ///// <summary>
-
 namespace MofBootstrap
 {
+    enum MofToGenerate
+    {
+        EMOF,
+        CMOF
+    }
     class MofGenerator
     {
 
@@ -56,8 +60,11 @@ namespace MofBootstrap
 
         MofFactory MofFactory { get; }
 
+        MergeHelper MergeHelper;
+        UmlToMof UmlToMof;
+        bool IsEmofGenerated;
 
-        public MofGenerator(ImmutableModel model)
+        public MofGenerator(ImmutableModel model, MofToGenerate mofToGenerate)
         {
             MofModel = model.ToMutable();
             var mutableGroup = model.ModelGroup.ToMutable();
@@ -76,11 +83,31 @@ namespace MofBootstrap
             Cmof = MofModel.Objects.OfType<PackageBuilder>().First(pb => pb.Name == "CMOF");
 
             // renaming conflicting element names like string, object, etc.
+
+            IsEmofGenerated = mofToGenerate == MofToGenerate.EMOF;
+
+            string[] ctbm = IsEmofGenerated ?
+                Constants.UML_CLASSES_TO_BE_MERGED_INTO_EMOF :
+                Constants.UML_CLASSES_TO_BE_MERGED_INTO_CMOF;
+
+            MergeHelper = new MergeHelper(ctbm, UmlModel);
+            UmlToMof = new UmlToMof(MergeHelper);
+
+
             RenameMofProperties();
         }
 
-        public void GenerateEssentialMof(bool removeUnknownTypedElements,
-                                         string fileNameForGeneratedModel = "../../../../MofImplementationLib/Model/Mof.mm")
+        public void Generate(string fileNameForGeneratedModel = "../../../../MofImplementationLib/Model/Mof.mm")
+        {
+            if (IsEmofGenerated)
+            {
+                GenerateEssentialMof(fileNameForGeneratedModel);
+                return;
+            }
+            GenerateCompleteMof(fileNameForGeneratedModel);
+        }
+
+        void GenerateEssentialMof(string fileNameForGeneratedModel = "../../../../MofImplementationLib/Model/Mof.mm")
         {
             //Console.WriteLine();
             //Console.WriteLine("-----------------");
@@ -88,14 +115,17 @@ namespace MofBootstrap
             
             //Console.WriteLine("Merge EMOF parts of UML into MOF::Reflection");
 
-            Dictionary<MutableObject, MutableObject> umlToMof = MergeUmlToMofReflectionEmof();
+            MergeUmlToMofReflection();
 
             // need to merge MOF::CMOFReflection::Argument into MOF::Reflection, because of class Object
-            MergeArgumentIntoMof();
+            //MergeArgumentIntoMof(umlToMof);
 
             Console.WriteLine();
             // Merge MOF::Reflection into MOF::Extension ------------------------------------------------------------------------------
             MergeMofReflectionIntoMofExtension();
+
+            // Merge MOF::Reflection into MOF::EMOF -----------------------------------------------------------------------------------
+            MergeMofReflectionIntoMofEmof();
 
             // Merge MOF::Common into MOF::EMOF ---------------------------------------------------------------------------------------
             MergeMofCommonIntoMofEmof();
@@ -103,27 +133,17 @@ namespace MofBootstrap
             // Merge MOF::Identifiers into MOF::EMOF ----------------------------------------------------------------------------------
             MergeMofIdentifiersIntoMofEmof();
 
-            // Merge MOF::Reflection into MOF::EMOF -----------------------------------------------------------------------------------
-            MergeMofReflectionIntoMofEmof();
-
             // Merge MOF::Extension into MOF::EMOF ------------------------------------------------------------------------------------
             MergeMofExtensionIntoMofEmof();
 
-            if (removeUnknownTypedElements)
-            {
-                RemoveUnknownTypedElementsFromEmof(umlToMof);
-            }
-            else
-            {
-                AddAllReferencedClassesToEmof(umlToMof);
-            }
+            SetSubsets();
 
             AddAssociationsFromUmlToEmof();
 
             Console.WriteLine();
             Console.WriteLine("Essential MOF generated.");
 
-            GenerateEmofmmFile(fileNameForGeneratedModel);
+            GeneratemmFile(fileNameForGeneratedModel);
         }
 
         /// <summary>
@@ -136,10 +156,9 @@ namespace MofBootstrap
         /// </summary>
         /// <param name="removeUnknownTypedElements">see above</param>
         /// <param name="fileNameForGeneratedModel">folder and name of .mm file</param>
-        public void GenerateCompleteMof(bool removeUnknownTypedElements,
-                                        string fileNameForGeneratedModel = "../../../../MofImplementationLib/Model/Mof.mm")
+        void GenerateCompleteMof(string fileNameForGeneratedModel = "../../../../MofImplementationLib/Model/Mof.mm")
         {
-            Dictionary<MutableObject, MutableObject> umlToMof = MergeUmlToMofReflectionCmof();
+            MergeUmlToMofReflection();
 
             // need to merge MOF::CMOFReflection::Argument into MOF::Reflection, because of class Object
             MergeArgumentIntoMof();
@@ -147,14 +166,14 @@ namespace MofBootstrap
             // Merge MOF::Reflection into MOF::Extension ------------------------------------------------------------------------------
             MergeMofReflectionIntoMofExtension();
 
+            // Merge MOF::Reflection into MOF::EMOF -----------------------------------------------------------------------------------
+            MergeMofReflectionIntoMofEmof();
+
             // Merge MOF::Common into MOF::EMOF ---------------------------------------------------------------------------------------
             MergeMofCommonIntoMofEmof();
 
             // Merge MOF::Identifiers into MOF::EMOF ----------------------------------------------------------------------------------
             MergeMofIdentifiersIntoMofEmof();
-
-            // Merge MOF::Reflection into MOF::EMOF -----------------------------------------------------------------------------------
-            MergeMofReflectionIntoMofEmof();
 
             // Merge MOF::Extension into MOF::EMOF ------------------------------------------------------------------------------------
             MergeMofExtensionIntoMofEmof();
@@ -174,14 +193,7 @@ namespace MofBootstrap
             // Merge MOF::CMOFReflection into MOF::CMOF -------------------------------------------------------------------------------
             MergeMofCmofReflectionIntoMofCmof();
 
-            if (removeUnknownTypedElements)
-            {
-                RemoveUnknownTypedElementsFromCmof(umlToMof);
-            }
-            else
-            {
-                AddAllReferencedClassesToCmof(umlToMof);
-            }
+            SetSubsets();
 
             AddAssociationsFromUmlToCmof();
 
@@ -195,26 +207,20 @@ namespace MofBootstrap
             lowerValue.Type = literalInteger;
             upperValue.Type = literalUnlimited;
 
-            foreach (var a in Cmof.PackagedElement.OfType<AssociationBuilder>())
-            {
-                Console.WriteLine("\t\t" + a.Name + " member end count: " + a.MemberEnd.Count);
-            }
-
-
             Console.WriteLine();
             Console.WriteLine("Complete MOF generated.");
 
-            GenerateCmofmmFile(fileNameForGeneratedModel);
+            GeneratemmFile(fileNameForGeneratedModel);
+
+            //foreach (var pair in umlToMof)
+            //{
+            //    Console.WriteLine((pair.Key as NamedElementBuilder).Name + " " + (pair.Value as NamedElementBuilder).Name);
+            //}
         }
 
-        public Dictionary<MutableObject, MutableObject> MergeUmlToMofReflectionEmof()
+        public void MergeUmlToMofReflection()
         {
-            return UmlToMof.UmlToMofReflectionEmof(UmlModel, MofReflection, MofFactory);
-        }
-
-        public Dictionary<MutableObject, MutableObject> MergeUmlToMofReflectionCmof()
-        {
-            return UmlToMof.UmlToMofReflectionCmof(UmlModel, MofReflection, MofFactory);
+            UmlToMof.UmlToMofReflection(UmlModel, MofReflection, MofFactory);
         }
 
         public void MergeMofReflectionIntoMofExtension()
@@ -270,58 +276,29 @@ namespace MofBootstrap
         public void MergeArgumentIntoMof()
         {
             ClassBuilder cmofArgument = CmofReflection.PackagedElement.OfType<ClassBuilder>().First(cb => cb.Name == "Argument");
-            ClassBuilder cmofArgClone = MergeHelper.CloneClassIntoMofModel(cmofArgument, MofFactory);
+            ClassBuilder cmofArgClone = MergeHelper.CloneClassIntoMofModel(cmofArgument, MofFactory, MofReflection);
             MofReflection.PackagedElement.Add(cmofArgClone);
+            //umlToMof.Add()
         }
 
-        public void RemoveUnknownTypedElementsFromEmof(Dictionary<MutableObject, MutableObject> umlToMof)
+
+        public void SetSubsets()
         {
-            // setting up subsettedProperties in emof
-            MergeHelper.SetSubsets(UmlModel, MofEmof, umlToMof);
-            // removing unnecessary properties and methods
-            UmlToMof.RemoveUnknownProperties(MofEmof);
+            if(IsEmofGenerated)
+            {
+                UmlToMof.SetSubsets(UmlModel, MofEmof);
+                return;
+            }
+            UmlToMof.SetSubsets(UmlModel, Cmof);
         }
 
-        public void AddAllReferencedClassesToEmof(Dictionary<MutableObject, MutableObject> umlToMof)
-        {
-            // adding classes that are referenced by elements in existing classes
-            UmlToMof.AddAllReferencedClasses(MofEmof, UmlModel, MofFactory, umlToMof);
-            // setting up subsettedProperties in emof
-            MergeHelper.SetSubsets(UmlModel, MofEmof, umlToMof);
-        }
-
-        public void RemoveUnknownTypedElementsFromCmof(Dictionary<MutableObject, MutableObject> umlToMof)
-        {
-            // setting up subsettedProperties in cmof
-            MergeHelper.SetSubsets(UmlModel, Cmof, umlToMof);
-            // removing unnecessary properties and methods
-            UmlToMof.RemoveUnknownProperties(Cmof);
-        }
-
-        public void AddAllReferencedClassesToCmof(Dictionary<MutableObject, MutableObject> umlToMof)
-        {
-            // adding classes that are referenced by elements in existing classes
-            UmlToMof.AddAllReferencedClasses(Cmof, UmlModel, MofFactory, umlToMof);
-            // setting up subsettedProperties in cmof
-            MergeHelper.SetSubsets(UmlModel, Cmof, umlToMof);
-        }
-
-        public void GenerateEmofmmFile(string fileName = "../../../../MofImplementationLib/Model/Mof.mm")
+        public void GeneratemmFile(string fileName = "../../../../MofImplementationLib/Model/Mof.mm")
         {
             // generating file
             Console.WriteLine(Environment.NewLine + "Creating .mm file" + Environment.NewLine);
             //var generator = new MofModelToMetaModelGenerator(mofModel.ToImmutable().Objects);
-            var generator = new MofModelToMetaModelGenerator(MofEmof.ToImmutable().PackagedElement);
-            var generatedCode = generator.Generate("MofImplementationLib.Model", "Mof", "http://www.omg.org/spec/MOF");
-            File.WriteAllText(fileName, generatedCode);
-        }
-
-        public void GenerateCmofmmFile(string fileName = "../../../../MofImplementationLib/Model/Mof.mm")
-        {
-            // generating file
-            Console.WriteLine(Environment.NewLine + "Creating .mm file" + Environment.NewLine);
-            //var generator = new MofModelToMetaModelGenerator(mofModel.ToImmutable().Objects);
-            var generator = new MofModelToMetaModelGenerator(Cmof.ToImmutable().PackagedElement);
+            PackageBuilder mofToBeGenerated = IsEmofGenerated ? MofEmof : Cmof;
+            var generator =  new MofModelToMetaModelGenerator(mofToBeGenerated.ToImmutable().PackagedElement);
             var generatedCode = generator.Generate("MofImplementationLib.Model", "Mof", "http://www.omg.org/spec/MOF");
             File.WriteAllText(fileName, generatedCode);
         }

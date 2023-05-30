@@ -14,9 +14,9 @@ namespace MofBootstrap
         {
             var xmiSerializer = new MofXmiSerializer();
 
-            MofGenerator mofGenerator = new MofGenerator(xmiSerializer.ReadModelFromFile("../../../MOF.xmi"));
+            MofGenerator mofGenerator = new MofGenerator(xmiSerializer.ReadModelFromFile("../../../MOF.xmi"), MofToGenerate.CMOF);
 
-            mofGenerator.GenerateCompleteMof(false);
+            mofGenerator.Generate("mof.mm");
         }
     }
 }

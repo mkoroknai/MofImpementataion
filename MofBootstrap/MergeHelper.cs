@@ -10,14 +10,55 @@ using System.Linq;
 
 namespace MofBootstrap
 {
-    public static class MergeHelper
+    public class MergeHelper
     {
+
+        public List<string> classesToBeMergedFromUml { get; }
+        public MutableModel UML { get; }
+        public MergeHelper(string[] classesToBeMergedFromUML, MutableModel umlModel)
+        {
+            classesToBeMergedFromUml = new List<string>(classesToBeMergedFromUML);
+            UML = umlModel;
+        }
+
+
+
+        List<TypeBuilder> NonExistentTypesInMof(ClassBuilder cls, PackageBuilder mof)
+        {
+            List<TypeBuilder> nonExTypes = new List<TypeBuilder>();
+            foreach (var attr in cls.OwnedAttribute)
+            {
+                if (!TypeExists(attr.Type, mof))
+                {
+                    nonExTypes.Add(attr.Type);
+                }
+            }
+
+            foreach (var op in cls.OwnedOperation)
+            {
+                foreach (var par in op.OwnedParameter)
+                {
+                    if (!TypeExists(par.Type, mof))
+                    {
+                        nonExTypes.Add(par.Type);
+                    }
+                }
+            }
+
+            return nonExTypes;
+        }
+
+        bool TypeExists(TypeBuilder type, PackageBuilder mof)
+        {
+            //List<string> classesToBeMergedList = new List<string>(classesToBeMergedFromUml);
+            return (mof.PackagedElement.OfType<TypeBuilder>().FirstOrDefault(pe => pe.Name == type.Name) != null); // && classesToBeMergedList.Contains(type.Name);
+        }
 
         /// <summary>
         /// renames properties of one class
         /// </summary>
         /// <param name="mofClass"></param>
-        public static void RenameMofProperties(ClassBuilder mofClass)
+        public void RenameMofProperties(ClassBuilder mofClass)
         {
             if(mofClass != null)
             {
@@ -60,12 +101,11 @@ namespace MofBootstrap
         /// <param name="cb">class to be copied</param>
         /// <param name="mofFactory">this is where the new class is created</param>
         /// <returns>the copy of the class</returns>
-        public static ClassBuilder CloneClassIntoMofModel(ClassBuilder cb, MofFactory mofFactory)
+        public ClassBuilder CloneClassIntoMofModel(ClassBuilder cb, MofFactory mofFactory, PackageBuilder mofPackage)
         {
-            //if(cb.Name == "RedefinableElement")
-            //{
-            //    ;
-            //}
+            //Console.WriteLine("cloning class " + cb.Name);
+            //var nonExTypes = NonExistentTypesInMof(cb, mof);
+
             ClassBuilder newClass = mofFactory.Class();
 
             newClass.Name = cb.Name;
@@ -75,14 +115,14 @@ namespace MofBootstrap
             // copying operations
             foreach (var op in cb.OwnedOperation)
             {
-                OperationBuilder newOp = CloneOperation(op, mofFactory);
+                OperationBuilder newOp = CloneOperation(op, mofFactory, mofPackage);
                 newClass.OwnedOperation.Add(newOp);
             }
 
             // copying attributes
             foreach (var attr in cb.OwnedAttribute)
             {
-                PropertyBuilder newAttr = CloneAttribute(attr, mofFactory);
+                PropertyBuilder newAttr = CloneAttribute(attr, mofFactory, mofPackage);
                 newClass.OwnedAttribute.Add(newAttr);
             }
 
@@ -107,7 +147,7 @@ namespace MofBootstrap
         /// <param name="eb">enumeration to be copied</param>
         /// <param name="mofFactory">to be copied here</param>
         /// <returns></returns>
-        public static EnumerationBuilder CloneEnumIntoMofModel(EnumerationBuilder eb, MofFactory mofFactory)
+        public EnumerationBuilder CloneEnumIntoMofModel(EnumerationBuilder eb, MofFactory mofFactory)
         {
             EnumerationBuilder newEnum = mofFactory.Enumeration();
 
@@ -133,10 +173,10 @@ namespace MofBootstrap
         }
 
 
-        public static AssociationBuilder CloneAssociation(AssociationBuilder ab, PackageBuilder receivingPackage, MofFactory mofFactory)
+        public AssociationBuilder CloneAssociation(AssociationBuilder ab, PackageBuilder receivingPackage, MofFactory mofFactory)
         {
 
-            Console.WriteLine("\t" + ab.Name + " member end count: " + ab.MemberEnd.Count);
+            //Console.WriteLine("\t" + ab.Name + " member end count: " + ab.MemberEnd.Count);
             AssociationBuilder newAssoc = mofFactory.Association();
 
             newAssoc.Name = ab.Name;
@@ -163,56 +203,36 @@ namespace MofBootstrap
             }
             else
             {
-                foreach(var oe in ab.OwnedEnd)
-                {
-                    Console.WriteLine("\townedEnd.Name: " + oe.Name);
-                    Console.WriteLine("\townedEnd.Class.Name: " + oe.Class?.Name);
-                    Console.WriteLine("\townedEnd.Type.Name: " + oe.Type.Name);
-                    Console.WriteLine("\townedEnd.MType.Name: " + oe.MType.MName);
-                }
-                Console.WriteLine("\t\t\t" + "memberEnd[0].Type.Name: " + ab.MemberEnd[0].Type.Name);
-                Console.WriteLine("\t\t\t" + "memberEnd[1].Type.Name: " + ab.MemberEnd[1].Type.Name);
+                //foreach(var oe in ab.OwnedEnd)
+                //{
+                //    Console.WriteLine("\townedEnd.Name: " + oe.Name);
+                //    Console.WriteLine("\townedEnd.Class.Name: " + oe.Class?.Name);
+                //    Console.WriteLine("\townedEnd.Type.Name: " + oe.Type.Name);
+                //    Console.WriteLine("\townedEnd.MType.Name: " + oe.MType.MName);
+                //}
+                //Console.WriteLine("\t\t\t" + "memberEnd[0].Type.Name: " + ab.MemberEnd[0].Type.Name);
+                //Console.WriteLine("\t\t\t" + "memberEnd[1].Type.Name: " + ab.MemberEnd[1].Type.Name);
                 ClassBuilder classMemberEnd0 = receivingPackage.PackagedElement.OfType<ClassBuilder>()
                     .FirstOrDefault(c => c.Name == ab.MemberEnd[0].Type.Name);
 
                 ClassBuilder classMemberEnd1 = receivingPackage.PackagedElement.OfType<ClassBuilder>()
                     .FirstOrDefault(c => c.Name == ab.MemberEnd[1].Type.Name);
 
-                Console.WriteLine("\t\t\t" + "classMemberEnd0 " + classMemberEnd0.Name);
-                Console.WriteLine("\t\t\t" + "classMemberEnd1 " + classMemberEnd1.Name);
+                //Console.WriteLine("\t\t\t" + "classMemberEnd0 " + classMemberEnd0.Name);
+                //Console.WriteLine("\t\t\t" + "classMemberEnd1 " + classMemberEnd1.Name);
 
                 if (classMemberEnd0 != null && classMemberEnd1 != null)
                 {
                     PropertyBuilder memberEnd0 = classMemberEnd1.OwnedAttribute.FirstOrDefault(m => m.Name == ab.MemberEnd[0].Name);
                     PropertyBuilder memberEnd1 = classMemberEnd0.OwnedAttribute.FirstOrDefault(m => m.Name == ab.MemberEnd[1].Name);
 
-                    Console.WriteLine("Needed attributes:");
-                    Console.WriteLine(ab.MemberEnd[0].Name);
-                    Console.WriteLine(ab.MemberEnd[1].Name);
-                    Console.WriteLine("Attributes in " + classMemberEnd0.Name);
-                    foreach(var at in classMemberEnd0.OwnedAttribute)
-                    {
-                        Console.WriteLine("\t" + at.Name);
-                    }
-                    Console.WriteLine("Attributes in " + classMemberEnd1.Name);
-                    foreach (var at in classMemberEnd1.OwnedAttribute)
-                    {
-                        Console.WriteLine("\t" + at.Name);
-                    }
-                    Console.WriteLine(memberEnd0?.Name + " and " + memberEnd1?.Name);
-
-                    //if (memberEnd0 == null)
-                    //    memberEnd0 = receivingPackage.PackagedElement.OfType<PropertyBuilder>().FirstOrDefault(p => p.Name == ab.MemberEnd[0].Name);
-                    //if (memberEnd1 == null)
-                    //    memberEnd1 = receivingPackage.PackagedElement.OfType<PropertyBuilder>().FirstOrDefault(p => p.Name == ab.MemberEnd[1].Name);
                     if (memberEnd0 != null)
                     {
                         //newAssoc.MemberEnd.Add(memberEnd1InMof);
-                        //Console.WriteLine(memberEnd0InMof.Type.Name);
-                        //Console.WriteLine(memberEnd1InMof.Type.Name);
+
                         try
                         {
-                            PropertyBuilder ownedEnd0Clone = CloneAttribute(ab.OwnedEnd[0], mofFactory);
+                            PropertyBuilder ownedEnd0Clone = CloneAttribute(ab.OwnedEnd[0], mofFactory, receivingPackage);
                             newAssoc.OwnedEnd.Add(ownedEnd0Clone);
                         }
                         catch (Exception ex)
@@ -226,11 +246,9 @@ namespace MofBootstrap
                     else if (memberEnd1 != null)
                     {
                         //newAssoc.MemberEnd.Add(memberEnd1InMof);
-                        //Console.WriteLine(memberEnd0InMof.Type.Name);
-                        //Console.WriteLine(memberEnd1InMof.Type.Name);
                         try
                         {
-                            PropertyBuilder ownedEnd0Clone = CloneAttribute(ab.OwnedEnd[0], mofFactory);
+                            PropertyBuilder ownedEnd0Clone = CloneAttribute(ab.OwnedEnd[0], mofFactory, receivingPackage);
                             newAssoc.OwnedEnd.Add(ownedEnd0Clone);
                         }
                         catch (Exception ex)
@@ -249,7 +267,7 @@ namespace MofBootstrap
         }
 
         // create a copy of the operation
-        public static OperationBuilder CloneOperation(OperationBuilder op, MofFactory mofFactory)
+        public OperationBuilder CloneOperation(OperationBuilder op, MofFactory mofFactory, PackageBuilder mofPackage)
         {
             OperationBuilder newOp = mofFactory.Operation();
 
@@ -272,7 +290,20 @@ namespace MofBootstrap
                 newParam.IsStream = param.IsStream;
                 newParam.IsUnique = param.IsUnique;
                 newParam.Visibility = param.Visibility;
-                newParam.Type = param.Type;
+
+                if (param.Type is PrimitiveTypeBuilder)
+                {
+                    newParam.Type = param.Type;
+                }
+                else
+                {
+                    var type = mofPackage.PackagedElement.OfType<TypeBuilder>().FirstOrDefault(t => t.Name == param.Type.Name);
+                    if (type != null)
+                        newParam.Type = type;
+                    else
+                        newParam.Type = null;
+                }
+
 
                 // setting lower and upper values
                 if (param.LowerValue is LiteralIntegerBuilder lv) // in the UML.xmi file, lowerValue always seems to be of type LiteralInteger
@@ -308,26 +339,6 @@ namespace MofBootstrap
                 // adding copied parameter to operation
                 newOp.OwnedParameter.Add(newParam);
             }
-
-            // adding exceptions
-            //foreach(var ex in op.RaisedException)
-            //{
-            //    TypeBuilder newException = mofFctr.Type();
-
-            //    newException.Name = ex.Name;
-            //    newException.Visibility = ex.Visibility;
-
-            // adding comments to exception
-            //foreach(var comment in ex.OwnedComment)
-            //{
-            //    CommentBuilder newComment = mofFctr.Comment();
-
-            //    foreach(var bod in comment.Body)
-            //    {
-
-            //    }
-            //}
-            //}
 
             // copying rules
             foreach(var rule in op.OwnedRule)
@@ -365,7 +376,8 @@ namespace MofBootstrap
             return newOp;
         }
 
-        public static PropertyBuilder CloneAttribute(PropertyBuilder attr, MofFactory mofFactory)
+
+        public PropertyBuilder CloneAttribute(PropertyBuilder attr, MofFactory mofFactory, PackageBuilder mofPackage)
         {
             //Console.WriteLine(".-.-.-.-.-.-. " + attr.Name);
             PropertyBuilder newAttr = mofFactory.Property();
@@ -379,7 +391,20 @@ namespace MofBootstrap
             {
                 newAttr.Name = attr.Name;
             }
-            newAttr.Type = attr.Type;
+
+            if (attr.Type is PrimitiveTypeBuilder)
+            {
+                newAttr.Type = attr.Type;
+            }
+            else
+            {
+                var types = mofPackage.PackagedElement.OfType<TypeBuilder>();
+                var type = mofPackage.PackagedElement.OfType<TypeBuilder>().FirstOrDefault(t => t.Name == attr.Type.Name);
+                if (type != null)
+                    newAttr.Type = type;
+                else
+                    newAttr.Type = null;
+            }
             newAttr.Visibility = attr.Visibility;
             newAttr.IsDerived = attr.IsDerived;
             newAttr.IsDerivedUnion = attr.IsDerivedUnion;
@@ -396,21 +421,6 @@ namespace MofBootstrap
             var mofModel = mofFactory.MModel;
             //PackageBuilder mofPckg = mofModel.Objects.OfType<PackageBuilder>().First()
 
-            // adding associations
-            foreach (var assoc in attr.Association)
-            {
-                // I think the existing association needs to be added to newAttr list,
-                // and a new one does not have to be created
-
-
-
-                //AssociationBuilder newAssoc = CloneAssociation(assoc, mofFactory);
-
-                //AssociationBuilder myAssoc = mofModel.Objects.OfType<AssociationBuilder>().First(assb => assb.Name == assoc.Name);
-
-                //newAttr.Association.Add(newAssoc);
-            }
-
             foreach (var redProp in attr.RedefinedProperty)
             {
                 PropertyBuilder prop = redProp;
@@ -419,18 +429,6 @@ namespace MofBootstrap
 
             // copying comments
             CopyComment(attr, newAttr, mofFactory);
-
-            // copying subsetted properties
-            //foreach(var subsetted in attr.SubsettedProperty)
-            //{
-            //    PropertyBuilder newSubset = mofFctr.Property();
-
-            //    newSubset.Name = subsetted.Name;
-            //    newSubset.Type = subsetted.Type;
-            //    newSubset.Visibility = subsetted.Visibility;
-
-            //    newAttr.SubsettedProperty.Add(newSubset);
-            //}
 
             // setting lower and upper values
             if (attr.LowerValue is LiteralIntegerBuilder lv) // in the UML.xmi file, lowerValue always seems to be of type LiteralInteger
@@ -470,7 +468,7 @@ namespace MofBootstrap
         /// <param name="copyHere">element where the comments are copied</param>
         /// <param name="mofFactory">this is where the new element is</param>
         /// <returns></returns>
-        public static ElementBuilder CopyComment(ElementBuilder toBeCopied, ElementBuilder copyHere, MofFactory mofFactory)
+        public ElementBuilder CopyComment(ElementBuilder toBeCopied, ElementBuilder copyHere, MofFactory mofFactory)
         {
 
             foreach (var comment in toBeCopied.OwnedComment)
@@ -490,7 +488,7 @@ namespace MofBootstrap
         /// <param name="donor">merged class</param>
         /// <param name="mofFactory">where receiving class is</param>
         /// <returns>what receiver becomes</returns>
-        public static ClassBuilder MergeClasses(ClassBuilder receiver, ClassBuilder donor, MofFactory mofFactory)
+        public ClassBuilder MergeClasses(ClassBuilder receiver, ClassBuilder donor, MofFactory mofFactory, PackageBuilder mofPackage)
         {
             if(receiver.Name != donor.Name)
             {
@@ -511,7 +509,7 @@ namespace MofBootstrap
                 }
                 else
                 {
-                    OperationBuilder newOp = CloneOperation(op, mofFactory);
+                    OperationBuilder newOp = CloneOperation(op, mofFactory, mofPackage);
                     receiver.OwnedOperation.Add(newOp);
                 }
             }
@@ -525,7 +523,7 @@ namespace MofBootstrap
                 }
                 else
                 {
-                    PropertyBuilder newAttr = CloneAttribute(attr, mofFactory);
+                    PropertyBuilder newAttr = CloneAttribute(attr, mofFactory, mofPackage);
                     receiver.OwnedAttribute.Add(newAttr);
                 }
             }
@@ -550,6 +548,100 @@ namespace MofBootstrap
             return receiver;
         }
 
+        void AddRefs(PackageBuilder merged, PackageBuilder receiver)
+        {
+            var classes = receiver.PackagedElement.OfType<ClassBuilder>();
+            foreach(var cb in classes)
+            {
+                var classInMerged = merged.PackagedElement.OfType<ClassBuilder>().FirstOrDefault(c => c.Name == cb.Name);
+
+                if(classInMerged != null)
+                {
+                    foreach (var a in cb.OwnedAttribute)
+                    {
+                        if (a.Type == null)
+                        {
+                            var attrInMerged = classInMerged.OwnedAttribute.FirstOrDefault(o => o.Name == a.Name);
+
+                            if (attrInMerged.Type is ClassBuilder typeClassInUml)
+                            {
+                                var existingType = receiver.PackagedElement.OfType<ClassBuilder>().FirstOrDefault(cbb => cbb.Name == typeClassInUml.Name);
+                                if (existingType != null)
+                                {
+                                    a.Type = existingType;
+                                }
+                                else
+                                {
+                                    Console.WriteLine("\ttype not found for: " + classInMerged.Name + "." + a.Name);
+                                }
+                            }
+                            else if (attrInMerged.Type is EnumerationBuilder typeEnumInUml)
+                            {
+                                var existingType = receiver.PackagedElement.OfType<EnumerationBuilder>().FirstOrDefault(ebb => ebb.Name == typeEnumInUml.Name);
+                                if (existingType != null)
+                                {
+                                    a.Type = existingType;
+                                }
+                                else
+                                {
+                                    Console.WriteLine("\ttype not found for: " + classInMerged.Name + "." + a.Name);
+                                }
+                            }
+                            else
+                            {
+                                Console.WriteLine(" not class nor enum");
+                            }
+                        }
+                    }
+
+                    foreach (var o in cb.OwnedOperation)
+                    {
+                        foreach (var p in o.OwnedParameter)
+                        {
+
+                            if (p.Type == null)
+                            {
+
+                                var opInMerged = classInMerged.OwnedOperation.FirstOrDefault(uo => uo.Name == o.Name);
+
+                                var parInMerged = opInMerged.OwnedParameter.FirstOrDefault(up => up.Name == p.Name);
+
+                                if (parInMerged.Type is ClassBuilder typeClassInUml)
+                                {
+                                    var existingType = receiver.PackagedElement.OfType<ClassBuilder>().FirstOrDefault(cbb => cbb.Name == typeClassInUml.Name);
+
+                                    if (existingType != null)
+                                    {
+                                        p.Type = existingType;
+                                    }
+                                    else
+                                    {
+                                        Console.WriteLine("\ttype not found for: " + classInMerged.Name + "." + o.Name + " parameter: " + p.Name);
+                                    }
+                                }
+                                else if (parInMerged.Type is EnumerationBuilder typeEnumInUml)
+                                {
+                                    var existingType = receiver.PackagedElement.OfType<EnumerationBuilder>().FirstOrDefault(ebb => ebb.Name == typeEnumInUml.Name);
+                                    if (existingType != null)
+                                    {
+                                        p.Type = existingType;
+                                    }
+                                    else
+                                    {
+                                        Console.WriteLine("\ttype not found for: " + classInMerged.Name + "." + o.Name + " parameter: " + p.Name);
+                                    }
+                                }
+                                else
+                                {
+                                    Console.WriteLine(" not class nor enum");
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
         /// <summary>
         /// Merges two packages
         /// </summary>
@@ -557,7 +649,7 @@ namespace MofBootstrap
         /// <param name="donor"></param>
         /// <param name="mofFactory"></param>
         /// <returns></returns>
-        public static PackageBuilder MergePackages(PackageBuilder receiver, PackageBuilder donor, MofFactory mofFactory)
+        public PackageBuilder MergePackages(PackageBuilder receiver, PackageBuilder donor, MofFactory mofFactory)
         {
 
             Console.WriteLine();
@@ -580,7 +672,7 @@ namespace MofBootstrap
                                 //Console.WriteLine("      ### Package already contains class: " + ecb.Name);
                                 // there is already a class with the same name in the package, so they have to be merged
                                 ClassBuilder recClass = receiver.PackagedElement.OfType<ClassBuilder>().First(pe => pe.Name == ecb.Name);
-                                receiver.PackagedElement.Add(MergeClasses(recClass, ecb, mofFactory));
+                                receiver.PackagedElement.Add(MergeClasses(recClass, ecb, mofFactory, receiver));
                                 Console.WriteLine("      ### " + ecb.Name + " merged");
                             }
                             else
@@ -593,14 +685,14 @@ namespace MofBootstrap
                                 }
                                 else
                                 {
-                                    ClassBuilder newClass = CloneClassIntoMofModel(ecb, mofFactory);
+                                    ClassBuilder newClass = CloneClassIntoMofModel(ecb, mofFactory, receiver);
                                     receiver.PackagedElement.Add(newClass);
                                 }
                             }
                         }
                         else if (element2 is EnumerationBuilder enumb)
                         {
-                            EnumerationBuilder newEnum = MergeHelper.CloneEnumIntoMofModel(enumb, mofFactory);
+                            EnumerationBuilder newEnum = CloneEnumIntoMofModel(enumb, mofFactory);
                         }
                         else
                         {
@@ -615,12 +707,12 @@ namespace MofBootstrap
                         //Console.WriteLine("      ### Package already contains class: " + ecb.Name);
                         // there is already a class with the same name in the package, so they have to be merged
                         ClassBuilder recClass = receiver.PackagedElement.OfType<ClassBuilder>().First(pe => pe.Name == ecb.Name);
-                        receiver.PackagedElement.Add(MergeClasses(recClass, ecb, mofFactory));
+                        receiver.PackagedElement.Add(MergeClasses(recClass, ecb, mofFactory, receiver));
                         Console.WriteLine("      ### " + ecb.Name + " merged");
                     }
                     else
                     {
-                        ClassBuilder newClass = CloneClassIntoMofModel(ecb, mofFactory);
+                        ClassBuilder newClass = CloneClassIntoMofModel(ecb, mofFactory, receiver);
                         receiver.PackagedElement.Add(newClass);
                     }
                 }
@@ -638,23 +730,6 @@ namespace MofBootstrap
                         receiver.PackagedElement.Add(newEnum);
                     }
                 }
-                //else if(element is AssociationBuilder ab)
-                //{
-                //    if (receiver.PackagedElement.Where(pe => pe.Name == ab.Name).FirstOrDefault() != null)
-                //    {
-                //        Console.WriteLine("      ### Package already contains assoc: " + ab.Name);
-                //        // there is already an association with the same name in the package, so they have to be merged
-                //        //Console.WriteLine("      Association merge needs to be implemented!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
-                //    }
-                //    else
-                //    {
-                //        receiver.PackagedElement.Add(CloneAssociation(ab, mofFactory));
-                //    }
-                //}
-                //else
-                //{
-                //    Console.WriteLine("      element " + element + " was ignored.");
-                //}
             }
 
             // copying associations last because merged classes are needed
@@ -668,7 +743,7 @@ namespace MofBootstrap
                     if (receiver.PackagedElement.Where(pe => pe.Name == ab.Name).FirstOrDefault() == null)
                     {
                         var ass = CloneAssociation(ab, receiver, mofFactory);
-                        if (ass.MemberEnd.Count == 0) Console.WriteLine("empty member end: " + ass.Name);
+                        //if (ass.MemberEnd.Count == 0) Console.WriteLine("empty member end: " + ass.Name);
                         receiver.PackagedElement.Add(ass);
                     }
                     else
@@ -678,6 +753,8 @@ namespace MofBootstrap
                     }
                 }
             }
+
+            AddRefs(donor, receiver);
 
             return receiver;
         }
@@ -689,7 +766,7 @@ namespace MofBootstrap
         /// <param name="umlModel"></param>
         /// <param name="mergePckgs"></param>
         /// <param name="cmof"></param>
-        public static void CopyAssociationsFromUml(MutableModel umlModel, PackageBuilder mof, MofFactory mofFactory)
+        public void CopyAssociationsFromUml(MutableModel umlModel, PackageBuilder mof, MofFactory mofFactory)
         {
             Console.WriteLine("_____________________________________Merging Associations from UML______________________________________");
             foreach (var assocInUml in umlModel.Objects.OfType<AssociationBuilder>())
@@ -739,12 +816,10 @@ namespace MofBootstrap
                             {
                                 AssociationBuilder newAssoc = mofFactory.Association();
                                 newAssoc.Name = assocInUml.Name;
-                                //newAssoc.MemberEnd.Add(memberEnd1InMof);
-                                //Console.WriteLine(memberEnd0InMof.Type.Name);
-                                //Console.WriteLine(memberEnd1InMof.Type.Name);
+
                                 try
                                 {
-                                    PropertyBuilder ownedEnd0Clone = CloneAttribute(assocInUml.OwnedEnd[0], mofFactory);
+                                    PropertyBuilder ownedEnd0Clone = CloneAttribute(assocInUml.OwnedEnd[0], mofFactory, mof);
                                     ownedEnd0Clone.Aggregation = assocInUml.OwnedEnd[0].Aggregation;
                                     newAssoc.OwnedEnd.Add(ownedEnd0Clone);
                                 }
@@ -766,65 +841,5 @@ namespace MofBootstrap
             }
         }
 
-        public static void SetSubsets(MutableModel uml, PackageBuilder cmof, Dictionary<MutableObject, MutableObject> umlToMof)
-        {
-            foreach(var pair in umlToMof)
-            {
-                var key = pair.Key;
-                if(key is ClassBuilder umlClass)
-                {
-                    ClassBuilder cmofClass = null;
-                    cmofClass = cmof.PackagedElement.OfType<ClassBuilder>().First(c => c.Name == umlClass.Name);
-                    // go through attributes
-                    foreach (var umlAttr in umlClass.OwnedAttribute)
-                    {
-                        // if there is a subsettedProperty of the attribute, find the attribute in cmofClass
-                        if (umlAttr.SubsettedProperty.Count > 0)
-                        {
-                            PropertyBuilder cmofAttr = null;
-                            try
-                            {
-                                cmofAttr = cmofClass.OwnedAttribute.First(oa => oa.Name == umlAttr.Name);
-                            }
-                            catch
-                            {
-                                cmofAttr = cmofClass.OwnedAttribute.First(oa => oa.Name == "_" + umlAttr.Name);
-                            }
-
-                            // go through subsettedProperties
-                            foreach (var umlSubsP in umlAttr.SubsettedProperty)
-                            {
-                                if(!(umlSubsP.MParent is AssociationBuilder))
-                                {
-                                    // look for it in cmof, then add it to cmofAttr
-                                    ClassBuilder cmofSubsPClass = null;
-                                    cmofSubsPClass = cmof.PackagedElement.OfType<ClassBuilder>().First(c => c.Name == umlSubsP.MParent.MName);
-
-                                    PropertyBuilder cmofSubsProp = null;
-                                    try
-                                    {
-                                        cmofSubsProp = cmofSubsPClass.OwnedAttribute.First(c => c.Name == umlSubsP.Name);
-                                    }
-                                    catch
-                                    {
-                                        cmofSubsProp = cmofSubsPClass.OwnedAttribute.First(c => c.Name == "_" + umlSubsP.Name);
-                                    }
-
-                                    cmofAttr.SubsettedProperty.Add(cmofSubsProp);
-
-                                    Console.WriteLine(umlSubsP.Name + "\t" + umlSubsP.MParent.MName);
-
-                                    //cmofAttr.SubsettedProperty.Add(cmofSubsP);
-                                }
-                                else
-                                {
-                                    Console.WriteLine("\t\t" + umlSubsP.MParent.MName + " is Association");
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
     }
 }
