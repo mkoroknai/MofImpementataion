@@ -56,7 +56,7 @@ namespace MofTest
         {
             var factory = new MofFactory(umlModel);
 
-            association01 = umlModel.Objects.OfType<AssociationBuilder>().First(a => a.Name == "A_selection_objectNode");
+            association01 = umlModel.Objects.OfType<AssociationBuilder>().First(aa => aa.Name == "A_selection_objectNode");
             behavioralfeat01 = umlModel.Objects.OfType<BehavioralFeatureBuilder>().First(bf => bf.Name == "isConsistentWith");
 
             behavior01 = factory.Behavior();
@@ -98,8 +98,8 @@ namespace MofTest
             connectorend01 = factory.ConnectorEnd();
             var ce02 = factory.ConnectorEnd();
             ConnectorBuilder Connector = factory.Connector();
-            connectorend01.Connector = Connector;
-            ce02.Connector = Connector;
+            //connectorend01.Connector = Connector;
+            //ce02.Connector = Connector;
             Connector.End.Add(connectorend01);
             Connector.End.Add(ce02);
             AssociationBuilder testAssociation01 = factory.Association();
@@ -116,7 +116,8 @@ namespace MofTest
             enumerationliteral01 = factory.EnumerationLiteral();
             var c = factory.Enumeration();
             c.Name = "testEnumeration69";
-            enumerationliteral01.Enumeration = c;
+            c.OwnedLiteral.Add(enumerationliteral01);
+            //enumerationliteral01.Enumeration = c;
 
             extensionend01 = factory.ExtensionEnd();
             extensionend01.Name = "testExtensionEnd01";
@@ -149,7 +150,8 @@ namespace MofTest
             namedelement02 = umlModel.Objects.OfType<NamedElementBuilder>().First(ne => ne.Name == "UML");
             var ns = factory.Namespace();
             ns.Name = "testNamespace00";
-            namedelement02.Namespace = ns;
+            ns.Member.Add(namedelement02);
+            //namedelement02.Namespace = ns;
 
             namespace01 = factory.Namespace();
             var p = umlModel.Objects.OfType<PackageableElementBuilder>().First(pe => pe.Name == "Activities");
@@ -179,7 +181,7 @@ namespace MofTest
 
             parameterableelement01 = factory.ParameterableElement();
 
-            parameter04 = umlModel.Objects.OfType<ParameterBuilder>().First(p => p.Name == "result");
+            parameter04 = umlModel.Objects.OfType<ParameterBuilder>().First(pp => pp.Name == "result");
 
             port01 = factory.Port();
             port01.Name = "testPort01";
