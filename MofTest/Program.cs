@@ -28,11 +28,61 @@ namespace MofTest
             //var mutableGroup = model.ModelGroup.ToMutable();
             //var umlModel = mutableGroup.Models.First(m => m.Name.Contains("UML.xmi"));
 
-            //umlModel.
 
-            TestGraph();
+            //TestGraph();
             //TestTestGraph();
+            //BuildGraphModel();
+            TestGraphModel();
+        }
 
+        private static void TestGraphModel()
+        {
+            MutableModel testmodel = new MutableModel();
+            GraphMetaFactory factory = new GraphMetaFactory(testmodel);
+
+            var graph = factory.UndirectedGraph();
+
+            graph.Name = "Graf";
+
+            var vertex1 = factory.Vertex();
+            vertex1.ID = "v1";
+            var vertex2 = factory.Vertex();
+            vertex2.ID = "v2";
+            var vertex3 = factory.Vertex();
+            vertex3.ID = "v3";
+            var vertex4 = factory.Vertex();
+            vertex4.ID = "v4";
+
+
+            var edge1 = factory.Edge();
+            edge1.Ends.Add(vertex1);
+            edge1.Ends.Add(vertex2);
+            var edge2 = factory.Edge();
+            edge2.Ends.Add(vertex3);
+            edge2.Ends.Add(vertex2);
+
+            graph.AddEdge(edge1);
+            graph.AddEdge(edge2);
+            graph.AddVertex(vertex4);
+
+
+            Console.WriteLine("Number of edges: " + graph.Edges.Count);
+            Console.WriteLine("Number of vertices: " + graph.Vertices.Count);
+
+            Console.WriteLine(vertex1.ID + ".OwnerGraph: " + vertex1.OwnerGraph?.Name);
+            Console.WriteLine(vertex2.ID + ".OwnerGraph: " + vertex2.OwnerGraph?.Name);
+
+            Console.WriteLine();
+            Console.WriteLine("removing vertex2...");
+            Console.WriteLine();
+
+            graph.RemoveVertex(vertex2);
+
+            Console.WriteLine("Number of edges: " + graph.Edges.Count);
+            Console.WriteLine("Number of vertices: " + graph.Vertices.Count);
+
+            Console.WriteLine(vertex1.ID + ".OwnerGraph: " + vertex1.OwnerGraph?.Name);
+            Console.WriteLine(vertex2.ID + ".OwnerGraph: " + vertex2.OwnerGraph?.Name);
         }
 
         static void Test001()
@@ -121,6 +171,169 @@ namespace MofTest
             var generatedCode = generator.Generate("SampleNamespace", "MOF_modell_teszt", "http://example.org/mytesztlang/0.1");
             File.WriteAllText("ModellTeszt.mm", generatedCode);
         }
+
+
+        static void BuildGraphModel()
+        {
+            MutableModel model = new MutableModel("TestGraphModel");
+            MofFactory factory = new MofFactory(model);
+            PrimitiveTypeBuilder stringType = factory.PrimitiveType();
+            PrimitiveTypeBuilder intType = factory.PrimitiveType();
+            PrimitiveTypeBuilder doubleType = factory.PrimitiveType();
+            stringType.Name = "String";
+            intType.Name = "Integer";
+            doubleType.Name = "Real";
+
+            ClassBuilder vertex = factory.Class();
+            vertex.Name = "Vertex";
+            // vertex id property
+            PropertyBuilder vertexId = factory.Property();
+            vertexId.Type = stringType;
+            vertexId.Name = "ID";
+
+
+            vertex.OwnedAttribute.Add(vertexId);
+
+            ClassBuilder edge = factory.Class();
+            edge.Name = "Edge";
+            PropertyBuilder edgeWeight = factory.Property();
+            PropertyBuilder edgeEnd = factory.Property();
+
+            edgeWeight.Type = doubleType;
+            edgeWeight.Name = "Weight";
+
+            edgeEnd.Type = vertex;
+            edgeEnd.Name = "Ends";
+            edgeEnd.IsUnique = true;
+            var edgeEndUpperValue = factory.LiteralUnlimitedNatural();
+            edgeEndUpperValue.Value = 2;
+            edgeEnd.UpperValue = edgeEndUpperValue;
+
+            edge.OwnedAttribute.Add(edgeWeight);
+            edge.OwnedAttribute.Add(edgeEnd);
+
+            // building undirected graph class
+            ClassBuilder graph = factory.Class();
+            graph.Name = "UndirectedGraph";
+
+            PropertyBuilder graphName = factory.Property();
+            graphName.Name = "Name";
+            graphName.Type = stringType;
+
+            PropertyBuilder vertices = factory.Property();
+            vertices.Name = "Vertices";
+            vertices.Type = vertex;
+            var verticesUpperValue = factory.LiteralUnlimitedNatural();
+            verticesUpperValue.Value = long.MaxValue;
+            vertices.IsUnique = true;
+            vertices.UpperValue = verticesUpperValue;
+
+
+            PropertyBuilder edges = factory.Property();
+            edges.Name = "Edges";
+            edges.Type = edge;
+            var edgesUpperValue = factory.LiteralUnlimitedNatural();
+            edgesUpperValue.Value = long.MaxValue;
+            edges.IsUnique = true;
+            edges.UpperValue = edgesUpperValue;
+
+            graph.OwnedAttribute.Add(graphName);
+            graph.OwnedAttribute.Add(vertices);
+            graph.OwnedAttribute.Add(edges);
+
+
+            // add edge operation
+            OperationBuilder graphAddEdge = factory.Operation();
+            graphAddEdge.Name = "AddEdge";
+            ParameterBuilder graphAddEdgeInput = factory.Parameter();
+            graphAddEdgeInput.Name = "edge";
+            graphAddEdgeInput.Direction = ParameterDirectionKind.In;
+            graphAddEdgeInput.Type = edge;
+
+            graphAddEdge.OwnedParameter.Add(graphAddEdgeInput);
+
+            // remove edge operation
+            OperationBuilder graphRemoveEdge = factory.Operation();
+            graphRemoveEdge.Name = "RemoveEdge";
+            ParameterBuilder graphRemoveEdgeInput = factory.Parameter();
+            graphRemoveEdgeInput.Name = "edge";
+            graphRemoveEdgeInput.Direction = ParameterDirectionKind.In;
+            graphRemoveEdgeInput.Type = edge;
+
+            graphRemoveEdge.OwnedParameter.Add(graphRemoveEdgeInput);
+
+            // add vertex operation
+            OperationBuilder graphAddVertex = factory.Operation();
+            graphAddVertex.Name = "AddVertex";
+            ParameterBuilder graphAddVertInput = factory.Parameter();
+            graphAddVertInput.Name = "Vertex";
+            graphAddVertInput.Type = vertex;
+
+            graphAddVertex.OwnedParameter.Add(graphAddVertInput);
+
+            // remove vertex operation
+            OperationBuilder graphRemoveVertex = factory.Operation();
+            graphRemoveVertex.Name = "RemoveVertex";
+            ParameterBuilder graphRemoveVertInput = factory.Parameter();
+            graphRemoveVertInput.Name = "Vertex";
+            graphRemoveVertInput.Type = vertex;
+
+            graphRemoveVertex.OwnedParameter.Add(graphRemoveVertInput);
+
+            graph.OwnedOperation.Add(graphAddEdge);
+            graph.OwnedOperation.Add(graphRemoveEdge);
+            graph.OwnedOperation.Add(graphAddVertex);
+            graph.OwnedOperation.Add(graphRemoveVertex);
+
+
+            PropertyBuilder vertexOwner = factory.Property();
+            PropertyBuilder edgeOwner = factory.Property();
+
+            vertexOwner.Name = "OwnerGraph";
+            vertexOwner.Type = graph;
+            vertexOwner.IsReadOnly = true;
+            edgeOwner.Name = "OwnerGraph";
+            edgeOwner.Type = graph;
+            edgeOwner.IsReadOnly = true;
+
+            vertex.OwnedAttribute.Add(vertexOwner);
+            edge.OwnedAttribute.Add(edgeOwner);
+
+
+            AssociationBuilder owner_vertex = factory.Association();
+            owner_vertex.MemberEnd.Add(vertices);
+            owner_vertex.MemberEnd.Add(vertexOwner);
+
+            AssociationBuilder owner_edge = factory.Association();
+            owner_edge.MemberEnd.Add(edges);
+            owner_edge.MemberEnd.Add(edgeOwner);
+
+            PackageBuilder package = factory.Package();
+            package.Name = "GraphMeta";
+
+            //package.PackagedElement.Add(stringType);
+            package.PackagedElement.Add(vertex);
+            package.PackagedElement.Add(edge);
+            package.PackagedElement.Add(graph);
+            package.PackagedElement.Add(owner_vertex);
+            package.PackagedElement.Add(owner_edge);
+
+
+            // generating file
+            Console.WriteLine(Environment.NewLine + "Creating .mm file" + Environment.NewLine);
+            var generator = new MofModelToMetaModelGenerator(package.ToImmutable().PackagedElement);
+            var generatedCode = generator.Generate("SampleNamespace", "GraphMeta", "http://example.org/mytestlang/0.1");
+
+
+            string mm_filepath = "../../../Model/UndirectedGraph.mm";
+            File.WriteAllText(mm_filepath, generatedCode);
+
+
+            string xmi_filepath = "../../../Model/UndirectedGraph.xmi";
+            XmiSerializer xmiSerializer = new XmiSerializer();
+            xmiSerializer.WriteModelToFile(xmi_filepath, model);
+        }
+
 
         static void TestGraph()
         {
@@ -275,7 +488,7 @@ namespace MofTest
             //mc.Compile();
 
         }
-
+        /*
         static void TestTestGraph()
         {
             MutableModel model = new MutableModel("tst");
@@ -310,5 +523,6 @@ namespace MofTest
                 Console.WriteLine(n.ID);
             }
         }
+        */
     }
 }

@@ -46,15 +46,15 @@ namespace MofBootstrap
     class MofGenerator
     {
 
-        MutableModel MofModel;
-        PackageBuilder MofReflection;
-        PackageBuilder MofExtension;
-        PackageBuilder CmofReflection;
-        PackageBuilder CmofExtension;
-        PackageBuilder MofCommon;
-        PackageBuilder MofEmof;
-        PackageBuilder MofIdentifiers;
-        PackageBuilder Cmof;
+        MutableModel MofModel{ get; }
+        PackageBuilder MofReflection { get; }
+        PackageBuilder MofExtension { get; }
+        PackageBuilder CmofReflection { get; }
+        PackageBuilder CmofExtension { get; }
+        PackageBuilder MofCommon { get; }
+        PackageBuilder MofEmof { get; }
+        PackageBuilder MofIdentifiers { get; }
+        PackageBuilder Cmof { get; }
 
         MutableModel UmlModel;
 
@@ -64,10 +64,10 @@ namespace MofBootstrap
         UmlToMof UmlToMof;
         bool IsEmofGenerated;
 
-        public MofGenerator(ImmutableModel model, MofToGenerate mofToGenerate)
+        public MofGenerator(ImmutableModel mofModel, MofToGenerate mofToGenerate)
         {
-            MofModel = model.ToMutable();
-            var mutableGroup = model.ModelGroup.ToMutable();
+            MofModel = mofModel.ToMutable();
+            var mutableGroup = mofModel.ModelGroup.ToMutable();
             UmlModel = mutableGroup.Models.First(m => m.Name.Contains("UML.xmi"));
 
             MofFactory = new MofFactory(MofModel, ModelFactoryFlags.DontMakeObjectsCreated);
@@ -82,7 +82,6 @@ namespace MofBootstrap
             MofIdentifiers = MofModel.Objects.OfType<PackageBuilder>().First(pb => pb.Name == "Identifiers");
             Cmof = MofModel.Objects.OfType<PackageBuilder>().First(pb => pb.Name == "CMOF");
 
-            // renaming conflicting element names like string, object, etc.
 
             IsEmofGenerated = mofToGenerate == MofToGenerate.EMOF;
 
@@ -94,6 +93,7 @@ namespace MofBootstrap
             UmlToMof = new UmlToMof(MergeHelper);
 
 
+            // renaming conflicting element names like string, object, etc.
             RenameMofProperties();
         }
 

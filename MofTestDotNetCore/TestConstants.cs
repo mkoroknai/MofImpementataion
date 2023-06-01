@@ -169,7 +169,7 @@ namespace MofTestProjDotNetCore
 
 		public static readonly string ElementImport_GetName = "testElementImport01"; // (testElementImport01)
 
-		public static readonly int Element_AllOwnedElements_Count = 38; // (Class)
+		public static readonly int Element_AllOwnedElements_Count = 50; // (Class)
 
 		public static readonly bool Element_MustBeOwned = true; // (Class)
 
@@ -358,13 +358,13 @@ namespace MofTestProjDotNetCore
 
 		public static readonly string Property_Opposite = "activity"; // (edge)
 
-		public static readonly bool Property_IsAttribute = false; // (edge)
+		public static readonly bool Property_IsAttribute = true; // (edge)
 
 		public static readonly bool Property_IsCompatibleWith = false; // (edge)
 
 		public static readonly bool Property_IsConsistentWith = false; // (edge)
 
-		public static readonly bool Property_IsNavigable = false; // (edge)
+		public static readonly bool Property_IsNavigable = true; // (edge)
 
 		public static readonly string[] Property_SubsettingContext =
 		{

@@ -1,24 +1,32 @@
 namespace SampleNamespace
 {
-    metamodel UndirectedGraph(Uri="http://example.org/mytestlang/0.1"); 
+    metamodel GraphMeta(Uri="http://example.org/mytestlang/0.1"); 
 
 
     class Vertex
     {
     	string ID;
-    	derived int NeighborCount;
-    	list<Vertex> Neighbors;
-    	void AddEdge(Vertex neighbor);
-    	void RemoveEdge(Vertex neighbor);
+    	UndirectedGraph OwnerGraph;
+    }
+
+    class Edge
+    {
+    	double Weight;
+    	set<Vertex> Ends;
+    	UndirectedGraph OwnerGraph;
     }
 
     class UndirectedGraph
     {
-    	derived int Size;
-    	list<Vertex> Vertices;
-    	void AddVertex(Vertex vertex);
-    	void RemoveVertex(Vertex vertex);
-    	void AddPair(Vertex first, Vertex second);
+    	string Name;
+    	set<Vertex> Vertices;
+    	set<Edge> Edges;
+    	void AddEdge(Edge edge);
+    	void RemoveEdge(Edge edge);
+    	void AddVertex(Vertex Vertex);
+    	void RemoveVertex(Vertex Vertex);
     }
 
+    association UndirectedGraph.Vertices with Vertex.OwnerGraph;
+    association UndirectedGraph.Edges with Edge.OwnerGraph;
 }

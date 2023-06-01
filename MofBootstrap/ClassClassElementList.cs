@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using MetaDslx.Modeling;
 using MofBootstrapLib.Model;
+using System.IO;
 
 namespace MofBootstrap
 {
@@ -54,6 +55,11 @@ namespace MofBootstrap
             }
 
             return listString;
+        }
+
+        public void SaveToFile(string filename)
+        {
+            File.WriteAllText(filename, ToString());
         }
     }
 }
